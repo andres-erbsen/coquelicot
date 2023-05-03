@@ -1473,8 +1473,8 @@ Proof.
   generalize (filterlim_locally_closely (F := Riemann_fine a c) (fun ptd : SF_seq => scal (sign (c - a)) (Riemann_sum f ptd))).
   move /proj2 /(_ If).
   move /(filterlim_filter_le_2 _ closely_le_closely_norm) => H.
-  generalize (proj1 (filterlim_closely_norm (F := Riemann_fine a c) (fun ptd : SF_seq => scal (sign (c - a)) (Riemann_sum f ptd))) H).
-  intros [P [[alpha HP] H2]] ; clear If H ; rename H2 into If.
+  case: (proj1 (filterlim_closely_norm (F := Riemann_fine a c) (fun ptd : SF_seq => scal (sign (c - a)) (Riemann_sum f ptd))) H eps)
+    => {H If} [P [[alpha HP] If]].
   destruct (filter_ex (F := Riemann_fine b c) (fun y => seq_step (SF_lx y) < alpha
     /\ pointed_subdiv y /\
      SF_h y = Rmin b c /\ seq.last (SF_h y) (SF_lx y) = Rmax b c)) as [y' Hy'].
@@ -1507,7 +1507,7 @@ Proof.
   specialize (If _ _ (proj1 H) (proj1 H0)).
   rewrite -> sign_eq_1 by exact: Rlt_Rminus.
   rewrite -> sign_eq_1 in If by now apply Rlt_Rminus, Rlt_le_trans with b.
-  eapply Rle_lt_trans with (2 := If).
+  apply Rle_lt_trans with (2 := If).
   apply Req_le, f_equal.
   rewrite !scal_one.
   case: H => _ ; case: H0 => _ ; clear ; intros.
