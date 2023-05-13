@@ -4,7 +4,7 @@ Installation instructions
 Prerequisites
 -------------
 
-You will need the Coq proof assistant (>= 8.8). You will need the
+You will need the Coq proof assistant (>= 8.12). You will need the
 [MathComp](http://math-comp.github.io/math-comp/) library to be installed too.
 
 The `.tar.gz` file is distributed with a working set of configure files. They
