@@ -23,6 +23,6 @@ RUN opam init -y --no-setup -j4 --bare --disable-sandboxing && \
     opam switch create minimal ocaml-system && \
     opam switch create latest  ocaml-system && \
     opam repository add coq-released https://coq.inria.fr/opam/released --all-switches && \
-    opam install -y --switch=minimal $OPAM_PACKAGES coq.8.12.2  coq-mathcomp-ssreflect.1.11.0  && \
-    opam install -y --switch=latest  $OPAM_PACKAGES coq.8.16.1 coq-mathcomp-ssreflect.1.15.0 && \
+    opam install -y --switch=minimal $OPAM_PACKAGES coq.8.12.2 coq-mathcomp-ssreflect.1.11.0 && \
+    opam install -y --switch=latest  $OPAM_PACKAGES coq.8.17.0 coq-mathcomp-ssreflect.2.0.0  && \
     opam clean -a -c -r -s --logs
