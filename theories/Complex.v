@@ -304,11 +304,17 @@ Proof.
   apply injective_projections ; simpl ; ring.
 Qed.
 
+Definition C_AbelianMonoid_mixin :=
+  AbelianMonoid.Mixin _ _ _ Cplus_comm Cplus_assoc Cplus_0_r.
+
+Canonical C_AbelianMonoid :=
+  AbelianMonoid.Pack C C_AbelianMonoid_mixin C.
+
 Definition C_AbelianGroup_mixin :=
-  AbelianGroup.Mixin _ _ _ _ Cplus_comm Cplus_assoc Cplus_0_r Cplus_opp_r.
+  AbelianGroup.Mixin _ _ Cplus_opp_r.
 
 Canonical C_AbelianGroup :=
-  AbelianGroup.Pack C C_AbelianGroup_mixin C.
+  AbelianGroup.Pack C (AbelianGroup.Class _ _ C_AbelianGroup_mixin) C.
 
 Lemma Copp_0 : Copp 0 = 0.
 Proof.

@@ -1598,7 +1598,7 @@ Lemma Riemann_sum_opp (f : R -> V) ptd :
 Proof.
 apply SF_cons_ind with (s := ptd) => {ptd} /= [x0 | [x0 y0] s IH].
 rewrite /Riemann_sum /=.
-apply sym_eq, @opp_zero.
+rewrite opp_zero //.
 rewrite !Riemann_sum_cons /= IH.
 rewrite opp_plus.
 apply f_equal with (f := fun v => plus v (opp (Riemann_sum f s))).
@@ -1685,7 +1685,7 @@ Proof.
       rewrite /minus 2?(Riemann_sum_cons _ (x0, y1)) SF_cut_down_h.
       rewrite opp_plus plus_assoc /=.
       apply (f_equal (fun x => plus x _)).
-      rewrite (plus_comm (scal (SF_h ptd - x0) (f y1))) -2!plus_assoc.
+      rewrite (plus_comm (scal (SF_h ptd - x0) (f y1))) -3!plus_assoc.
       apply f_equal.
       by rewrite plus_comm -plus_assoc plus_opp_l plus_zero_r.
       by [].
@@ -1982,10 +1982,10 @@ Proof.
   replace (unif_part (- a) (- b) n) with (map Ropp (unif_part a b n)).
   elim: (unif_part a b n) {1}0 {2}0 => /= [ | x1 s IH] x0 x0'.
   rewrite /Riemann_sum /=.
-  by apply sym_eq, @opp_zero.
+  rewrite opp_zero //.
   destruct s as [ | x2 s].
   rewrite /Riemann_sum /=.
-  by apply sym_eq, @opp_zero.
+  rewrite opp_zero //.
   rewrite (SF_cons_f2 _ x1) ; try by apply Nat.lt_0_succ.
   rewrite (SF_cons_f2 _ (- x1)) ; try by apply Nat.lt_0_succ.
   rewrite !Riemann_sum_cons /=.

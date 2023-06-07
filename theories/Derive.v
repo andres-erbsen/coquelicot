@@ -57,7 +57,7 @@ Lemma linear_opp (l : U -> V) (x : U) : is_linear l ->
 Proof.
   intros Hl.
   apply plus_reg_r with (l x).
-  rewrite <- linear_plus, !plus_opp_l.
+  rewrite <- linear_plus. rewrite !plus_opp_l.
   by apply linear_zero.
   exact Hl.
 Qed.
@@ -161,7 +161,7 @@ Lemma is_linear_opp : is_linear (@opp V).
 Proof.
   repeat split.
   - move => x y.
-    now apply opp_plus.
+    apply (opp_plus x y).
   - move => k x.
     apply sym_eq.
     apply: scal_opp_r.

@@ -31,8 +31,10 @@ library, we provide correspondence theorems between the two libraries.
 
 - [UniformSpace]: a uniform space with a predicate [ball] defining an ecart.
 - [CompleteSpace]: a [UniformSpace] that is also complete.
-- [AbelianGroup]: a type with a commutative operator [plus] and a neutral
-  element [zero]; elements are invertible ([opp], [minus]).
+- [AbelianMonoid]: a type with a commutative operator [plus] and a neutral
+  element [zero].
+- [AbelianGroup]: an [AbelianMonoid] in which elements are invertible
+  ([opp], [minus]).
 - [Ring]: an [AbelianGroup] with a noncommutative operator [mult] that is
   distributive with respect to [plus]; [one] is the neutral element of [mult].
 - [AbsRing]: a [Ring] with an operator [abs] that is subdistributive

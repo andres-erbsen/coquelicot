@@ -1133,7 +1133,7 @@ Proof.
   apply f_equal; unfold ln.
   repeat rewrite (scal_distr_l _ l).
   rewrite -plus_assoc; apply f_equal.
-  rewrite opp_plus scal_distr_l; apply f_equal.
+  rewrite (opp_plus (sum_n _ _) ) scal_distr_l; apply f_equal.
   rewrite Nat.add_0_r -scal_opp_l scal_assoc.
   apply trans_eq with (scal (opp (one : K)) (a (S n))).
   now rewrite scal_opp_l scal_one.

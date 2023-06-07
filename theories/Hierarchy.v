@@ -26,7 +26,7 @@ Require Import Rcomplements Rbar Markov Iter Lub.
 (** This file first describes [Filter]s that are predicates of type
 [(T -> Prop) -> Prop] used for limits and neighborhoods.  Then the
 algebraic hierarchy of the Coquelicot library is given: from the
-[AbelianGroup] to the [CompleteNormedModule]. Topologies on [R] and
+[AbelianMonoid] to the [CompleteNormedModule]. Topologies on [R] and
 [R*R] are also given.
 
  #<br/># More documentation details can be found in #<a
@@ -658,18 +658,16 @@ constructor.
 Qed.
 
 (** * Algebraic spaces *)
-(** ** Abelian groups *)
+(** ** Abelian monoids *)
 
-Module AbelianGroup.
+Module AbelianMonoid.
 
 Record mixin_of (G : Type) := Mixin {
   plus : G -> G -> G ;
-  opp : G -> G ;
   zero : G ;
   ax1 : forall x y, plus x y = plus y x ;
   ax2 : forall x y z, plus x (plus y z) = plus (plus x y) z ;
   ax3 : forall x, plus x zero = x ;
-  ax4 : forall x, plus x (opp x) = zero
 }.
 
 Notation class_of := mixin_of (only parsing).
@@ -685,51 +683,42 @@ End ClassDef.
 Module Exports.
 
 Coercion sort : type >-> Sortclass.
-Notation AbelianGroup := type.
+Notation AbelianMonoid := type.
 
 End Exports.
 
-End AbelianGroup.
+End AbelianMonoid.
 
-Export AbelianGroup.Exports.
+Export AbelianMonoid.Exports.
 
 (** Arithmetic operations *)
 
-Section AbelianGroup1.
+Section AbelianMonoid1.
 
-Context {G : AbelianGroup}.
+Context {G : AbelianMonoid}.
 
-Definition zero := AbelianGroup.zero _ (AbelianGroup.class G).
-Definition plus := AbelianGroup.plus _ (AbelianGroup.class G).
-Definition opp := AbelianGroup.opp _ (AbelianGroup.class G).
-Definition minus x y := (plus x (opp y)).
+Definition zero := AbelianMonoid.zero _ (AbelianMonoid.class G).
+Definition plus := AbelianMonoid.plus _ (AbelianMonoid.class G).
 
 Lemma plus_comm :
   forall x y : G,
   plus x y = plus y x.
 Proof.
-apply AbelianGroup.ax1.
+apply AbelianMonoid.ax1.
 Qed.
 
 Lemma plus_assoc :
   forall x y z : G,
   plus x (plus y z) = plus (plus x y) z.
 Proof.
-apply AbelianGroup.ax2.
+apply AbelianMonoid.ax2.
 Qed.
 
 Lemma plus_zero_r :
   forall x : G,
   plus x zero = x.
 Proof.
-apply AbelianGroup.ax3.
-Qed.
-
-Lemma plus_opp_r :
-  forall x : G,
-  plus x (opp x) = zero.
-Proof.
-apply AbelianGroup.ax4.
+apply AbelianMonoid.ax3.
 Qed.
 
 Lemma plus_zero_l :
@@ -740,104 +729,13 @@ intros x.
 now rewrite plus_comm plus_zero_r.
 Qed.
 
-Lemma plus_opp_l :
-  forall x : G,
-  plus (opp x) x = zero.
-Proof.
-intros x.
-rewrite plus_comm.
-apply plus_opp_r.
-Qed.
-
-Lemma opp_zero :
-  opp zero = zero.
-Proof.
-rewrite <- (plus_zero_r (opp zero)).
-apply plus_opp_l.
-Qed.
-
-Lemma minus_zero_r :
-  forall x : G,
-  minus x zero = x.
-Proof.
-intros x.
-unfold minus.
-rewrite opp_zero.
-apply plus_zero_r.
-Qed.
-
-Lemma minus_eq_zero (x : G) :
-  minus x x = zero.
-Proof.
-  apply plus_opp_r.
-Qed.
-
-Lemma plus_reg_l :
-  forall r x y : G,
-  plus r x = plus r y -> x = y.
-Proof.
-intros r x y H.
-rewrite -(plus_zero_l x) -(plus_opp_l r) -plus_assoc.
-rewrite H.
-now rewrite plus_assoc plus_opp_l plus_zero_l.
-Qed.
-
-Lemma plus_reg_r :
-  forall r x y : G,
-  plus x r = plus y r -> x = y.
-Proof.
-intros z x y.
-rewrite !(plus_comm _ z).
-by apply plus_reg_l.
-Qed.
-
-Lemma opp_opp :
-  forall x : G,
-  opp (opp x) = x.
-Proof.
-intros x.
-apply plus_reg_r with (opp x).
-rewrite plus_opp_r.
-apply plus_opp_l.
-Qed.
-
-Lemma opp_plus :
-  forall x y : G,
-  opp (plus x y) = plus (opp x) (opp y).
-Proof.
-intros x y.
-apply plus_reg_r with (plus x y).
-rewrite plus_opp_l.
-rewrite plus_assoc.
-rewrite (plus_comm (opp x)).
-rewrite <- (plus_assoc (opp y)).
-rewrite plus_opp_l.
-rewrite plus_zero_r.
-apply sym_eq, plus_opp_l.
-Qed.
-
-Lemma opp_minus (x y : G) :
-  opp (minus x y) = minus y x.
-Proof.
-  rewrite /minus opp_plus opp_opp.
-  by apply plus_comm.
-Qed.
-
-Lemma minus_trans (r x y : G) :
-  minus x y = plus (minus x r) (minus r y).
-Proof.
-  rewrite /minus -!plus_assoc.
-  apply f_equal.
-  by rewrite plus_assoc plus_opp_l plus_zero_l.
-Qed.
-
-End AbelianGroup1.
+End AbelianMonoid1.
 
 (** Sum *)
 
-Section Sums.
+Section Sums1.
 
-Context {G : AbelianGroup}.
+Context {G : AbelianMonoid}.
 
 Definition sum_n_m (a : nat -> G) n m :=
   iter_nat plus zero a n m.
@@ -1009,6 +907,169 @@ Proof.
   by apply Nat.le_0_l.
 Qed.
 
+End Sums1.
+
+(** ** Abelian groups *)
+
+Module AbelianGroup.
+
+Record mixin_of (G : AbelianMonoid) := Mixin {
+  opp : G -> G ;
+  ax1 : forall x, plus x (opp x) = zero
+}.
+
+Section ClassDef.
+
+Record class_of (G : Type) := Class {
+  base : AbelianMonoid.class_of G ;
+  mixin : mixin_of (AbelianMonoid.Pack _ base G)
+}.
+Local Coercion base : class_of >-> AbelianMonoid.class_of.
+
+Structure type := Pack { sort; _ : class_of sort ; _ : Type }.
+Local Coercion sort : type >-> Sortclass.
+
+Variable cT : type.
+
+Definition class := let: Pack _ c _ := cT return class_of cT in c.
+
+Let xT := let: Pack T _ _ := cT in T.
+Notation xclass := (class : class_of xT).
+
+Definition AbelianMonoid := AbelianMonoid.Pack cT xclass xT.
+
+End ClassDef.
+
+Module Exports.
+
+Coercion base : class_of >-> AbelianMonoid.class_of.
+Coercion mixin : class_of >-> mixin_of.
+Coercion sort : type >-> Sortclass.
+Coercion AbelianMonoid : type >-> AbelianMonoid.type.
+Canonical AbelianMonoid.
+Notation AbelianGroup := type.
+
+End Exports.
+
+End AbelianGroup.
+
+Export AbelianGroup.Exports.
+
+(** Arithmetic operations *)
+
+Section AbelianGroup1.
+
+Context {G : AbelianGroup}.
+
+Definition opp := AbelianGroup.opp _ (AbelianGroup.class G).
+Definition minus x y := (plus x (opp y)).
+
+Lemma plus_opp_r :
+  forall x : G,
+  plus x (opp x) = zero.
+Proof.
+apply AbelianGroup.ax1.
+Qed.
+
+Lemma plus_opp_l :
+  forall x : G,
+  plus (opp x) x = zero.
+Proof.
+intros x.
+rewrite plus_comm.
+apply plus_opp_r.
+Qed.
+
+Lemma opp_zero :
+  opp zero = zero.
+Proof.
+rewrite <- (plus_zero_r (opp zero)).
+apply plus_opp_l.
+Qed.
+
+Lemma minus_zero_r :
+  forall x : G,
+  minus x zero = x.
+Proof.
+intros x.
+unfold minus.
+rewrite opp_zero.
+apply plus_zero_r.
+Qed.
+
+Lemma minus_eq_zero (x : G) :
+  minus x x = zero.
+Proof.
+  apply plus_opp_r.
+Qed.
+
+Lemma plus_reg_l :
+  forall r x y : G,
+  plus r x = plus r y -> x = y.
+Proof.
+intros r x y H.
+rewrite -(plus_zero_l x) -(plus_opp_l r) -plus_assoc.
+rewrite H.
+now rewrite plus_assoc plus_opp_l plus_zero_l.
+Qed.
+
+Lemma plus_reg_r :
+  forall r x y : G,
+  plus x r = plus y r -> x = y.
+Proof.
+intros z x y.
+rewrite !(plus_comm _ z).
+by apply plus_reg_l.
+Qed.
+
+Lemma opp_opp :
+  forall x : G,
+  opp (opp x) = x.
+Proof.
+intros x.
+apply plus_reg_r with (opp x).
+rewrite plus_opp_r.
+apply plus_opp_l.
+Qed.
+
+Lemma opp_plus :
+  forall x y : G,
+  opp (plus x y) = plus (opp x) (opp y).
+Proof.
+intros x y.
+apply plus_reg_r with (plus x y).
+rewrite plus_opp_l.
+rewrite plus_assoc.
+rewrite (plus_comm (opp x)).
+rewrite <- (plus_assoc (opp y)).
+rewrite plus_opp_l.
+rewrite plus_zero_r.
+apply sym_eq, plus_opp_l.
+Qed.
+
+Lemma opp_minus (x y : G) :
+  opp (minus x y) = minus y x.
+Proof.
+  rewrite /minus opp_plus opp_opp.
+  by apply plus_comm.
+Qed.
+
+Lemma minus_trans (r x y : G) :
+  minus x y = plus (minus x r) (minus r y).
+Proof.
+  rewrite /minus -!plus_assoc.
+  apply f_equal.
+  by rewrite plus_assoc plus_opp_l plus_zero_l.
+Qed.
+
+End AbelianGroup1.
+
+(** Sum *)
+
+Section Sums2.
+
+Context {G : AbelianGroup}.
+
 Lemma sum_n_m_sum_n (a:nat -> G) (n m : nat) :
   (n <= m)%nat -> sum_n_m a (S n) m = minus (sum_n a m) (sum_n a n).
 Proof.
@@ -1021,7 +1082,7 @@ Proof.
   by [].
 Qed.
 
-End Sums.
+End Sums2.
 
 (** ** Noncommutative rings *)
 
@@ -1055,6 +1116,7 @@ Definition class := let: Pack _ c _ := cT return class_of cT in c.
 Let xT := let: Pack T _ _ := cT in T.
 Notation xclass := (class : class_of xT).
 
+Definition AbelianMonoid := AbelianMonoid.Pack cT xclass xT.
 Definition AbelianGroup := AbelianGroup.Pack cT xclass xT.
 
 End ClassDef.
@@ -1064,6 +1126,8 @@ Module Exports.
 Coercion base : class_of >-> AbelianGroup.class_of.
 Coercion mixin : class_of >-> mixin_of.
 Coercion sort : type >-> Sortclass.
+Coercion AbelianMonoid : type >-> AbelianMonoid.type.
+Canonical AbelianMonoid.
 Coercion AbelianGroup : type >-> AbelianGroup.type.
 Canonical AbelianGroup.
 Notation Ring := type.
@@ -1108,14 +1172,14 @@ Lemma mult_distr_r :
   forall x y z : K,
   mult (plus x y) z = plus (mult x z) (mult y z).
 Proof.
-apply Ring.ax4.
+apply: Ring.ax4.
 Qed.
 
 Lemma mult_distr_l :
   forall x y z : K,
   mult x (plus y z) = plus (mult x y) (mult x z).
 Proof.
-apply Ring.ax5.
+apply: Ring.ax5.
 Qed.
 
 Lemma mult_zero_r :
@@ -1294,6 +1358,7 @@ Definition class := let: Pack _ c _ := cT return class_of cT in c.
 Let xT := let: Pack T _ _ := cT in T.
 Notation xclass := (class : class_of xT).
 
+Definition AbelianMonoid := AbelianMonoid.Pack cT xclass xT.
 Definition AbelianGroup := AbelianGroup.Pack cT xclass xT.
 Definition Ring := Ring.Pack cT xclass xT.
 
@@ -1304,6 +1369,8 @@ Module Exports.
 Coercion base : class_of >-> Ring.class_of.
 Coercion mixin : class_of >-> mixin_of.
 Coercion sort : type >-> Sortclass.
+Coercion AbelianMonoid : type >-> AbelianMonoid.type.
+Canonical AbelianMonoid.
 Coercion AbelianGroup : type >-> AbelianGroup.type.
 Canonical AbelianGroup.
 Coercion Ring : type >-> Ring.type.
@@ -2754,6 +2821,7 @@ Definition class := let: Pack _ c _ := cT return class_of cT in c.
 Let xT := let: Pack T _ _ := cT in T.
 Notation xclass := (class : class_of xT).
 
+Definition AbelianMonoid := AbelianMonoid.Pack cT xclass xT.
 Definition AbelianGroup := AbelianGroup.Pack cT xclass xT.
 
 End ClassDef.
@@ -2763,6 +2831,8 @@ Module Exports.
 Coercion base : class_of >-> AbelianGroup.class_of.
 Coercion mixin : class_of >-> mixin_of.
 Coercion sort : type >-> Sortclass.
+Coercion AbelianMonoid : type >-> AbelianMonoid.type.
+Canonical AbelianMonoid.
 Coercion AbelianGroup : type >-> AbelianGroup.type.
 Canonical AbelianGroup.
 Notation ModuleSpace := type.
@@ -2796,7 +2866,7 @@ Lemma scal_distr_l :
   forall (x : K) (u v : V),
   scal x (plus u v) = plus (scal x u) (scal x v).
 Proof.
-apply ModuleSpace.ax3.
+apply: ModuleSpace.ax3.
 Qed.
 
 Lemma scal_distr_r :
@@ -2955,6 +3025,7 @@ Definition class := let: Pack _ c _ := cT return class_of cT in c.
 Let xT := let: Pack T _ _ := cT in T.
 Notation xclass := (class : class_of xT).
 
+Definition AbelianMonoid := AbelianMonoid.Pack cT xclass xT.
 Definition AbelianGroup := AbelianGroup.Pack cT xclass xT.
 Definition ModuleSpace := ModuleSpace.Pack _ cT xclass xT.
 Definition UniformSpace := UniformSpace.Pack cT xclass xT.
@@ -2966,6 +3037,8 @@ Module Exports.
 Coercion base : class_of >-> ModuleSpace.class_of.
 Coercion mixin : class_of >-> UniformSpace.class_of.
 Coercion sort : type >-> Sortclass.
+Coercion AbelianMonoid : type >-> AbelianMonoid.type.
+Canonical AbelianMonoid.
 Coercion AbelianGroup : type >-> AbelianGroup.type.
 Canonical AbelianGroup.
 Coercion ModuleSpace : type >-> ModuleSpace.type.
@@ -3012,6 +3085,7 @@ Definition class := let: Pack _ c _ := cT return class_of cT in c.
 Let xT := let: Pack T _ _ := cT in T.
 Notation xclass := (class : class_of xT).
 
+Definition AbelianMonoid := AbelianMonoid.Pack cT xclass xT.
 Definition AbelianGroup := AbelianGroup.Pack cT xclass xT.
 Definition ModuleSpace := ModuleSpace.Pack _ cT xclass xT.
 Definition UniformSpace := UniformSpace.Pack cT xclass xT.
@@ -3024,6 +3098,8 @@ Module Exports.
 Coercion base : class_of >-> NormedModuleAux.class_of.
 Coercion mixin : class_of >-> mixin_of.
 Coercion sort : type >-> Sortclass.
+Coercion AbelianMonoid : type >-> AbelianMonoid.type.
+Canonical AbelianMonoid.
 Coercion AbelianGroup : type >-> AbelianGroup.type.
 Canonical AbelianGroup.
 Coercion ModuleSpace : type >-> ModuleSpace.type.
@@ -3100,7 +3176,7 @@ Lemma norm_factor_gt_0 :
 Proof.
 rewrite <- (Rmult_1_r norm_factor).
 rewrite <- norm_zero.
-rewrite <- (plus_opp_r zero).
+rewrite -(plus_opp_r zero).
 apply (norm_compat2 _ _ (mkposreal _ Rlt_0_1)).
 apply ball_center.
 Qed.
@@ -3658,6 +3734,7 @@ Definition class := let: Pack _ c _ := cT return class_of cT in c.
 Let xT := let: Pack T _ _ := cT in T.
 Notation xclass := (class : class_of xT).
 
+Definition AbelianMonoid := AbelianMonoid.Pack cT xclass xT.
 Definition AbelianGroup := AbelianGroup.Pack cT xclass xT.
 Definition ModuleSpace := ModuleSpace.Pack _ cT xclass xT.
 Definition NormedModuleAux := NormedModuleAux.Pack _ cT xclass xT.
@@ -3673,6 +3750,8 @@ Coercion base : class_of >-> NormedModule.class_of.
 Coercion mixin : class_of >-> CompleteSpace.mixin_of.
 Coercion base2 : class_of >-> CompleteSpace.class_of.
 Coercion sort : type >-> Sortclass.
+Coercion AbelianMonoid : type >-> AbelianMonoid.type.
+Canonical AbelianMonoid.
 Coercion AbelianGroup : type >-> AbelianGroup.type.
 Canonical AbelianGroup.
 Coercion ModuleSpace : type >-> ModuleSpace.type.
@@ -3757,15 +3836,12 @@ End CompleteNormedModule1.
 
 (** ** Pairs *)
 
-Section prod_AbelianGroup.
+Section prod_AbelianMonoid.
 
-Context {U V : AbelianGroup}.
+Context {U V : AbelianMonoid}.
 
 Definition prod_plus (x y : U * V) :=
   (plus (fst x) (fst y), plus (snd x) (snd y)).
-
-Definition prod_opp (x : U * V) :=
-  (opp (fst x), opp (snd x)).
 
 Definition prod_zero : U * V := (zero, zero).
 
@@ -3793,6 +3869,21 @@ intros [u v].
 apply (f_equal2 pair) ; apply plus_zero_r.
 Qed.
 
+End prod_AbelianMonoid.
+
+Definition prod_AbelianMonoid_mixin (U V : AbelianMonoid) :=
+  AbelianMonoid.Mixin (U * V) _ _ prod_plus_comm prod_plus_assoc prod_plus_zero_r.
+
+Canonical prod_AbelianMonoid (U V : AbelianMonoid) :=
+  AbelianMonoid.Pack (U * V) (prod_AbelianMonoid_mixin U V) (U * V).
+
+Section prod_AbelianGroup.
+
+Context {U V : AbelianGroup}.
+
+Definition prod_opp (x : U * V) :=
+  (opp (fst x), opp (snd x)).
+
 Lemma prod_plus_opp_r :
   forall x : U * V,
   prod_plus x (prod_opp x) = prod_zero.
@@ -3804,10 +3895,10 @@ Qed.
 End prod_AbelianGroup.
 
 Definition prod_AbelianGroup_mixin (U V : AbelianGroup) :=
-  AbelianGroup.Mixin (U * V) _ _ _ prod_plus_comm prod_plus_assoc prod_plus_zero_r prod_plus_opp_r.
+  AbelianGroup.Mixin _ _ (@prod_plus_opp_r U V).
 
 Canonical prod_AbelianGroup (U V : AbelianGroup) :=
-  AbelianGroup.Pack (U * V) (prod_AbelianGroup_mixin U V) (U * V).
+  AbelianGroup.Pack (U * V) (AbelianGroup.Class _ _ (prod_AbelianGroup_mixin U V)) (U * V).
 
 Section prod_UniformSpace.
 
@@ -3840,7 +3931,6 @@ Proof.
 intros x y z e1 e2 [H1 H2] [H3 H4].
 split ; eapply ball_triangle ; eassumption.
 Qed.
-
 
 End prod_UniformSpace.
 
@@ -4307,17 +4397,14 @@ Qed.
 
 End Matrices.
 
-Section MatrixGroup.
+Section MatrixMonoid.
 
-Context {G : AbelianGroup} {m n : nat}.
+Context {G : AbelianMonoid} {m n : nat}.
 
 Definition Mzero := mk_matrix m n (fun i j => @zero G).
 
 Definition Mplus (A B : @matrix G m n) :=
   mk_matrix m n (fun i j => plus (coeff_mat zero A i j) (coeff_mat zero B i j)).
-
-Definition Mopp (A : @matrix G m n) :=
-  mk_matrix m n (fun i j => opp (coeff_mat zero A i j)).
 
 Lemma Mplus_comm :
   forall A B : @matrix G m n,
@@ -4348,6 +4435,21 @@ Proof.
   by apply plus_zero_r.
 Qed.
 
+Definition matrix_AbelianMonoid_mixin :=
+  AbelianMonoid.Mixin _ _ _ Mplus_comm Mplus_assoc Mplus_zero_r.
+
+Canonical matrix_AbelianMonoid :=
+  AbelianMonoid.Pack _ matrix_AbelianMonoid_mixin (@matrix G m n).
+
+End MatrixMonoid.
+
+Section MatrixGroup.
+
+Context {G : AbelianGroup} {m n : nat}.
+
+Definition Mopp (A : @matrix G m n) :=
+  mk_matrix m n (fun i j => opp (coeff_mat zero A i j)).
+
 Lemma Mplus_opp_r :
   forall A : @matrix G m n,
   Mplus A (Mopp A) = Mzero.
@@ -4359,10 +4461,10 @@ Proof.
 Qed.
 
 Definition matrix_AbelianGroup_mixin :=
-  AbelianGroup.Mixin _ _ _ _ Mplus_comm Mplus_assoc Mplus_zero_r Mplus_opp_r.
+  AbelianGroup.Mixin _ _ Mplus_opp_r.
 
 Canonical matrix_AbelianGroup :=
-  AbelianGroup.Pack _ matrix_AbelianGroup_mixin (@matrix G m n).
+  AbelianGroup.Pack _ (AbelianGroup.Class _ _ matrix_AbelianGroup_mixin) (@matrix G m n).
 
 End MatrixGroup.
 
@@ -4596,11 +4698,17 @@ Qed.
 
 (** * The topology on real numbers *)
 
+Definition R_AbelianMonoid_mixin :=
+  AbelianMonoid.Mixin _ _ _ Rplus_comm (fun x y z => sym_eq (Rplus_assoc x y z)) Rplus_0_r.
+
+Canonical R_AbelianMonoid :=
+  AbelianMonoid.Pack _ R_AbelianMonoid_mixin R.
+
 Definition R_AbelianGroup_mixin :=
-  AbelianGroup.Mixin _ _ _ _ Rplus_comm (fun x y z => sym_eq (Rplus_assoc x y z)) Rplus_0_r Rplus_opp_r.
+  AbelianGroup.Mixin _ _ Rplus_opp_r.
 
 Canonical R_AbelianGroup :=
-  AbelianGroup.Pack _ R_AbelianGroup_mixin R.
+  AbelianGroup.Pack _ (AbelianGroup.Class _ _ R_AbelianGroup_mixin) R.
 
 Definition R_Ring_mixin :=
   Ring.Mixin _ _ _ (fun x y z => sym_eq (Rmult_assoc x y z)) Rmult_1_r Rmult_1_l Rmult_plus_distr_r Rmult_plus_distr_l.
