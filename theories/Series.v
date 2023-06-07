@@ -151,7 +151,7 @@ exists (S N).
 intros [|u] v Hu Hv.
 elim Nat.nle_succ_0 with (1 := Hu).
 destruct (le_or_lt u v) as [Huv|Huv].
-rewrite -> sum_n_m_sum_n with (1 := Huv).
+rewrite (sum_n_m_sum_n _ _ _ Huv).
 apply HP ; apply HN.
 now apply le_S_n.
 now apply le_Sn_le.
@@ -184,7 +184,7 @@ apply H => //.
 now apply Nat.lt_le_incl.
 intros Hu Hv.
 apply: norm_compat1.
-rewrite <- sum_n_m_sum_n with (1 := Huv).
+rewrite -(sum_n_m_sum_n _ _ _ Huv).
 apply HN => //.
 now apply le_S.
 Qed.
@@ -242,7 +242,7 @@ Proof.
   apply filterlim_comp_2 with (3 := filterlim_plus _ _).
   apply filterlim_id.
   apply filterlim_const.
-  rewrite <- plus_assoc, plus_opp_r.
+  rewrite -plus_assoc plus_opp_r.
   apply plus_zero_r.
 Qed.
 
@@ -320,10 +320,10 @@ Proof.
   split ; move => [la Ha].
   exists (plus la  (opp (a O))).
   apply is_series_incr_1.
-  now rewrite <- plus_assoc, plus_opp_l, plus_zero_r.
+  now rewrite -plus_assoc plus_opp_l plus_zero_r.
   exists (plus la (a O)).
   apply is_series_decr_1.
-  now rewrite <- plus_assoc, plus_opp_r, plus_zero_r.
+  now rewrite -plus_assoc plus_opp_r plus_zero_r.
 Qed.
 
 Lemma ex_series_incr_n (a : nat -> V) (n : nat) :
@@ -335,11 +335,11 @@ Proof.
   exists (plus la (opp (sum_n a (pred (S n))))).
   apply is_series_incr_n.
   by apply Nat.lt_0_succ.
-  now rewrite <- plus_assoc, plus_opp_l, plus_zero_r.
+  now rewrite -plus_assoc plus_opp_l plus_zero_r.
   exists (plus la (sum_n a (pred (S n)))).
   apply is_series_decr_n with (S n).
   by apply Nat.lt_0_succ.
-  now rewrite <- plus_assoc, plus_opp_r, plus_zero_r.
+  now rewrite -plus_assoc plus_opp_r plus_zero_r.
 Qed.
 
 End Properties1.
@@ -545,7 +545,7 @@ Proof.
   elim => [ | n IH].
   rewrite !sum_O ; easy.
   rewrite !sum_Sn -IH.
-  apply opp_plus.
+  apply: opp_plus.
   apply filterlim_comp with (1:=Ha).
   apply filterlim_opp.
 Qed.
@@ -556,7 +556,7 @@ Lemma ex_series_opp (a : nat -> V) :
 Proof.
   move => [la Ha].
   exists (opp la).
-  by apply is_series_opp.
+  exact: is_series_opp.
 Qed.
 Lemma Series_opp (a : nat -> R) :
   Series (fun n => - a n) = - Series a.
