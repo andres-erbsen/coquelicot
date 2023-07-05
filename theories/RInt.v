@@ -24,6 +24,8 @@ From mathcomp Require Import ssreflect ssrbool ssrfun eqtype seq.
 
 Require Import Markov Rcomplements Rbar Lub Lim_seq SF_seq Continuity Hierarchy.
 
+Local Tactic Notation "intuition" := (intuition auto with arith zarith real rorders).
+
 (** This file contains the definition and properties of the Riemann
 integral, defined on a normed module on [R]. For real functions, a
 total function [RInt] is available. *)

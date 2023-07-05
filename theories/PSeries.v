@@ -23,6 +23,8 @@ From Coq Require Import Reals Even Div2 Psatz ssreflect.
 
 Require Import Rcomplements Rbar Lim_seq Lub Hierarchy Continuity Derive Seq_fct Series.
 
+Local Tactic Notation "intuition" := (intuition auto with arith zarith real).
+
 (** This file describes power series: #&Sigma; a<sub>k</sub>
 x<sup>k</sup>#. It contains definition, equivalence with the standard
 library, differentiability, integrability, and many results about the

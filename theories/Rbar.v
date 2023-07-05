@@ -23,6 +23,8 @@ From Coq Require Import Reals ssreflect.
 
 Require Import Rcomplements.
 
+Local Tactic Notation "intuition" := (intuition auto with real).
+
 (** This file contains the definition and properties of the set
  [R] # &#8746; {+ &infin;} &#8746; {- &infin;} # denoted by [Rbar]. We have defined:
   - coercions from [R] to [Rbar] and vice versa ([Finite] gives [R0] at infinity points)

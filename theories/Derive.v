@@ -25,6 +25,8 @@ From Coq Require Import Reals Psatz ssreflect.
 
 Require Import Rcomplements Rbar Lim_seq Iter Hierarchy Continuity Equiv.
 
+Local Tactic Notation "intuition" := (intuition auto with arith zarith real).
+
 Open Scope R_scope.
 
 (** This file describes results about differentiability on a generic

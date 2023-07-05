@@ -22,6 +22,8 @@ COPYING file for more details.
 From Coq Require Import Reals Psatz ssreflect.
 Require Import Rcomplements Rbar Lim_seq Continuity Derive Series Lub Hierarchy.
 
+Local Tactic Notation "intuition" := (intuition auto with arith zarith real).
+
 (** This file describes sequences of functions and results about
 their convergence. *)
 
