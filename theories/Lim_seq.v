@@ -23,6 +23,8 @@ From Coq Require Import Reals Psatz ssreflect.
 
 Require Import Rcomplements Rbar Lub Markov Hierarchy.
 
+Local Tactic Notation "intuition" := (intuition auto with arith zarith real).
+
 (** This file describes properties and definitions about limits of
 real sequences. This includes properties about the predicates
 [is_lim_seq] and [ex_lim_seq]. This file also defines several total

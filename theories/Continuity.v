@@ -23,6 +23,8 @@ From Coq Require Import Reals ssreflect.
 
 Require Import Rcomplements Rbar Hierarchy Compactness Lim_seq.
 
+Local Tactic Notation "intuition" := (intuition auto with arith zarith real).
+
 (** This file describes defineitions and properties of continuity on
 [R] and on uniform spaces. It also contains many results about the
 limit of a real function (predicates [is_lim] and [ex_lim] and total

@@ -23,6 +23,8 @@ From Coq Require Import Reals Psatz ssreflect.
 
 Require Import Rcomplements Lim_seq Rbar Hierarchy.
 
+Local Tactic Notation "intuition" := (intuition auto with arith zarith real).
+
 (** This file gives definitions and properties about series defined on
 a normed module. An equivalence with the standard library and several
 convergence criteria are provided. *)

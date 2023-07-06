@@ -24,6 +24,8 @@ From mathcomp Require Import seq.
 
 Require Import Rcomplements Rbar Lub Hierarchy.
 
+Local Tactic Notation "intuition" := (intuition auto with arith zarith real rorders).
+
 (** This file describes many properties about sequences of real
 numbers. Several formalizations are provided. They are mainly used for
 defining pointed subvivision in order to define Riemann sums. *)

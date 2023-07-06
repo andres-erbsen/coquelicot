@@ -37,6 +37,8 @@ Ltac evar_last :=
 
 From Coq Require Import Reals Psatz ssreflect.
 
+Local Tactic Notation "intuition" := (intuition auto with arith zarith real).
+
 Module MyNat.
 
 Lemma neq_succ_0 (n : nat) : S n <> 0.
