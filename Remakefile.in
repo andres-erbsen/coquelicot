@@ -47,17 +47,22 @@ configure config.status: configure.in
 theories/clean:
 	rm -f $(OBJS) theories/*.glob
 
-html/index.html: $(OBJS)
+html/full-index.html: $(OBJS)
 	rm -rf html
 	mkdir -p html
 	@COQDOC@ -toc -interpolate -utf8 -html -g -R theories Coquelicot -d html \
-	  --coqlib_url http://coq.inria.fr/distrib/current/stdlib \
+	  --coqlib_url https://coq.inria.fr/distrib/current/stdlib \
 	  --external https://math-comp.github.io/htmldoc mathcomp \
 	  $(addprefix theories/,$(FILES))
+	mv html/index.html html/full-index.html
+	for f in html/*.html; do
+	  sed -e 's;<a href="index.html">Index</a>;Go back to the <a href="Coquelicot.Coquelicot.html">Main page</a> or <a href="full-index.html">Index</a>.;' -i $f
+	done
 
-doc: html/index.html deps.dot
+doc: html/full-index.html deps.dot
 	dot -Tcmapx -odeps.map -Tpng -ohtml/deps.png deps.dot
 	sed -e '/img src="deps.png"/ r deps.map' -i html/Coquelicot.Coquelicot.html
+	cp html/Coquelicot.Coquelicot.html html/index.html
 	rm -f deps.map
 
 public: doc
@@ -66,7 +71,7 @@ public: doc
 
 deps.dot: $(addprefix theories/,$(FILES))
 	(echo "digraph coquelicot_deps {" ;
-	 echo "node [shape = ellipse, style=filled, URL=\"Coquelicot.\N.html\", color=black, fillcolor=cornflowerblue];";
+	 echo "node [shape = ellipse, style=filled, URL=\"Coquelicot.\N.html\", color=black, fillcolor=lightskyblue];";
 	(cd theories ; @COQDEP@ -R . Coquelicot $(FILES)) | sed -n -e 's/[.]vo.*: [^ ]*[.]v//p' |
 	while read src dst; do
 	  for d in $dst; do
