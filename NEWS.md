@@ -1,3 +1,8 @@
+Version 3.4.0
+-------------
+
+* added an `AbelianMonoid` structure at the bottom of the hierarchy
+
 Version 3.3.1
 -------------
 
