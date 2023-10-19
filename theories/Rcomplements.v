@@ -74,6 +74,52 @@ Proof.
   - by rewrite 2!Nat.add_0_l.
   - by rewrite 2!Nat.add_succ_l Nat.sub_succ IH.
 Qed.
+
+(* NOTE: needed because MyNat.le_add_l was only introduced in Coq 8.17 (see
+ * Coq.Numbers.Natural.Abstract.NAddOrder). This can go away and be replaced
+ * by Nat.le_add_r once the minimal Coq supported version is >= 8.17. *)
+Lemma le_add_l : forall n m : nat, n <= m + n.
+Proof.
+  intros n m; rewrite -{1}(Nat.add_0_l n); apply Nat.add_le_mono.
+  - exact (Nat.le_0_l m).
+  - exact (Nat.le_refl n).
+Qed.
+
+(* NOTE: When the minimal supported Coq version is >= 8.16,
+   remove it and rename MyNat.Even_double into Nat.Even_double *)
+Lemma Even_double : forall n : nat, Nat.Even n -> n = Nat.double (Nat.div2 n).
+Proof. now intros n [k ->]; rewrite Nat.double_twice Nat.div2_double. Qed.
+
+(* NOTE: When the minimal supported Coq version is >= 8.16,
+   remove it and rename MyNat.Odd_double into Nat.Odd_double *)
+Lemma Odd_double : forall n : nat, Nat.Odd n -> n = S (Nat.double (Nat.div2 n)).
+Proof.
+  intros n [k ->].
+  now rewrite Nat.add_1_r Nat.div2_succ_double Nat.double_twice.
+Qed.
+
+(* NOTE: When the minimal supported Coq version is >= 8.16,
+   remove it and rename MyNat.Odd_double into Nat.Odd_double *)
+Lemma Even_div2 : forall n : nat, Nat.Even n -> Nat.div2 n = Nat.div2 (S n).
+Proof. now intros n [k ->]; rewrite Nat.div2_double Nat.div2_succ_double. Qed.
+
+(* NOTE: When the minimal supported Coq version is >= 8.16,
+   remove it and rename MyNat.Odd_div2 into Nat.Odd_div2 *)
+Lemma Odd_div2 : forall n : nat, Nat.Odd n -> S (Nat.div2 n) = Nat.div2 (S n).
+Proof.
+  intros n [k ->]; rewrite Nat.add_1_r Nat.div2_succ_double.
+  rewrite -(Nat.add_1_r (S (2 * k))) (Nat.add_succ_comm (2 * k)).
+  rewrite -{2}(Nat.mul_1_r 2) -(Nat.mul_add_distr_l 2) Nat.add_succ_r.
+  now rewrite Nat.add_0_r Nat.div2_double.
+Qed.
+
+(* NOTE: When the minimal supported Coq version is >= 8.16,
+   remove it and rename MyNat.double_S into Nat.double_S *)
+Lemma double_S : forall n : nat, Nat.double (S n) = S (S (Nat.double n)).
+Proof.
+  now intros n; unfold Nat.double; rewrite Nat.add_succ_r Nat.add_succ_l.
+Qed.
+
 End MyNat.
 
 From Coq Require Import ssrbool.

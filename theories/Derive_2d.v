@@ -1045,7 +1045,7 @@ apply locally_2d_impl with (2:=H').
 apply locally_2d_forall.
 intros u'' v''.
 apply ex_diff_n_m.
-apply Nat.le_add_l.
+apply MyNat.le_add_l.
 rewrite partial_derive_add_zero.
 rewrite Nat.add_0_l.
 replace (S p) with (p+1)%nat by apply Nat.add_comm.

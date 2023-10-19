@@ -2861,7 +2861,7 @@ Proof.
     intuition.
     apply Rlt_le, Rlt_le_trans with (1 := proj2 Hn).
     apply Rplus_le_compat_r.
-    apply le_INR, Nat.le_add_l.
+    apply le_INR, MyNat.le_add_l.
 (* Rsum phi < eps/4 and Rsum psi < eps/4 *)
   case: (H phi eps4) => alpha0 Hphi.
   case: (H psi eps4) => {H} alpha1 Hpsi.

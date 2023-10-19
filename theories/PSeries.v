@@ -1374,27 +1374,27 @@ Proof.
   case: (Nat.Even_or_Odd n) => Hn.
 (* even n *)
   rewrite 3!sum_n_Reals.
-  rewrite -(Nat.Even_div2 _ Hn) {3}(Nat.Even_double _ Hn) Nat.double_twice.
+  rewrite -(MyNat.Even_div2 _ Hn) {3}(MyNat.Even_double _ Hn) Nat.double_twice.
   elim: (Nat.div2 n) => {n Hn} [ | n] ;
   rewrite ?double_S /sum_f_R0 -/sum_f_R0.
   rewrite /double /= ; ring.
   rewrite -pow_mult.
   replace (2 * S n)%nat with (S (S (Nat.double n)))
-    by (now rewrite -Nat.double_S Nat.double_twice).
+    by (now rewrite -MyNat.double_S Nat.double_twice).
   replace (S (S (Nat.double n)) + 1)%nat with (S (S (S (Nat.double n))))
     by (now rewrite Nat.add_1_r).
     rewrite !Nat.double_twice; simpl; move => <-; ring.
 (* odd n *)
   rewrite 3!sum_n_Reals.
-  rewrite -(Nat.Odd_div2 _ Hn) {3}(Nat.Odd_double _ Hn) !Nat.double_twice.
+  rewrite -(MyNat.Odd_div2 _ Hn) {3}(MyNat.Odd_double _ Hn) !Nat.double_twice.
   elim: (Nat.div2 n) => {n Hn} [ | n] ;
   rewrite ?double_S /sum_f_R0 -/sum_f_R0.
   rewrite /double /= ; ring.
   rewrite -?pow_mult.
   replace (2 * S n)%nat with (S (S (Nat.double n)))
-    by (rewrite -Nat.double_S Nat.double_twice ; ring).
+    by (rewrite -MyNat.double_S Nat.double_twice ; ring).
   replace (2 * S (S n))%nat with (S (S (S (S (Nat.double n)))))
-    by (rewrite -Nat.double_S Nat.double_twice ; ring).
+    by (rewrite -MyNat.double_S Nat.double_twice ; ring).
   replace (S (S (Nat.double n)) + 1)%nat with (S (S (S (Nat.double n)))) by ring.
   rewrite !Nat.double_twice; simpl; move => <-; ring.
   apply (is_lim_seq_plus' _ _ l1 (x*l2)).
@@ -1409,9 +1409,9 @@ Proof.
   apply Nat.le_trans with (1:=Hn).
   apply Nat.le_trans with (1+Nat.double (Nat.div2 n))%nat.
   case (Nat.Even_or_Odd n); intros J.
-  rewrite <- Nat.Even_double; try exact J.
+  rewrite <- MyNat.Even_double; try exact J.
   now apply le_S.
-  rewrite <- Nat.Odd_double; easy.
+  rewrite <- MyNat.Odd_double; easy.
   simpl; now rewrite Nat.add_0_r.
 (* a(2k+1)x^(2k+1) *)
   apply (is_lim_seq_scal_l _ x l2) => //.
@@ -1431,11 +1431,11 @@ Proof.
   apply Nat.le_trans with (1:=Hn).
   apply Nat.le_trans with (1+(1+Nat.double (Nat.div2 (pred n))))%nat.
   case (Nat.Even_or_Odd (pred n)); intros J.
-  rewrite <- Nat.Even_double; try exact J.
+  rewrite <- MyNat.Even_double; try exact J.
   case n.
   simpl; now apply le_S, le_S.
   intros m; simpl; now apply le_S.
-  rewrite <- Nat.Odd_double; try exact J.
+  rewrite <- MyNat.Odd_double; try exact J.
   case n; simpl; try easy.
   now apply le_S.
   simpl; now rewrite Nat.add_0_r.

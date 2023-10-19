@@ -552,7 +552,7 @@ Proof.
   apply Rnot_lt_le => H.
   apply Rminus_lt_0 in H.
   case: (Hy _ H) => N {} Hy.
-  move: (Hy _ (Nat.le_add_l N n)) => {Hy}.
+  move: (Hy _ (MyNat.le_add_l N n)) => {Hy}.
   apply Rle_not_lt.
   apply Rle_trans with (2 := Rle_abs _).
   apply Rplus_le_compat_r.
@@ -662,7 +662,7 @@ Proof.
   rewrite /Pser /infinite_sum in Hx.
   apply Rnot_lt_le => H.
   case: (Hx _ (proj1 (Rminus_lt_0 _ _) H)) => N {} Hx.
-  move: (Hx _ (Nat.le_add_l N 2)) => {Hx}.
+  move: (Hx _ (MyNat.le_add_l N 2)) => {Hx}.
   apply Rle_not_lt.
   apply Rle_trans with (2 := Rle_abs _).
   apply Rplus_le_compat_r.

@@ -128,7 +128,6 @@ Proof.
   case: (le_dec n (S m)).
   intro ; lia.
   intro H2.
-  Search (_ + (_ - _))%nat.
   rewrite (proj2 (Nat.sub_0_le _ _)) in H1 => //.
   contradict H2.
   by eapply Nat.le_trans, Nat.le_succ_diag_r.

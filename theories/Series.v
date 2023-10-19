@@ -857,9 +857,9 @@ Proof.
     apply le_S_n.
     apply Nat.le_trans with (1 := Hn).
     destruct (Nat.Even_or_Odd n) as [He | Ho].
-    - rewrite {1}(Nat.Even_double n); [| exact He].
+    - rewrite {1}(MyNat.Even_double n); [| exact He].
       now rewrite Nat.double_twice; apply Nat.le_succ_diag_r.
-    - now rewrite {1}(Nat.Odd_double n); [| exact Ho]; rewrite Nat.double_twice.
+    - now rewrite {1}(MyNat.Odd_double n); [| exact Ho]; rewrite Nat.double_twice.
 
     apply is_lim_seq_mult'.
     apply filterlim_ext with (2:=Hla); apply sum_n_Reals.
@@ -1041,7 +1041,7 @@ Proof.
     by apply Rabs_pos.
     apply pow_le.
     by apply Rlt_le, Rlt_trans with (1 := Rlt_0_1).
-    by apply H, Nat.le_add_l.
+    by apply H, MyNat.le_add_l.
     by apply IH.
   move => {} H.
   have : Finite 0 = p_infty.
