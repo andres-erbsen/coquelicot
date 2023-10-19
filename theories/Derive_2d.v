@@ -736,14 +736,9 @@ apply IHn.
 apply H.
 intros n m H1 f x y Hn.
 induction n.
-replace m with 0%nat.
-exact Hn.
-now apply le_n_0_eq.
-case (le_lt_or_eq _ _ H1).
-intros H2; apply IHn.
-now apply gt_S_le.
-apply (H _ _ _ _ Hn).
-intros H2; now rewrite H2.
+- apply Nat.le_0_r in H1 as ->; exact Hn.
+- destruct (proj1 (Nat.lt_eq_cases _ _) H1) as [H2 | ->]; [| exact Hn].
+  now apply IHn; apply ->Nat.lt_succ_r in H2; [exact H2 |]; apply H; exact Hn.
 Qed.
 
 Lemma ex_diff_n_deriv_aux1: forall f n x y,
@@ -992,10 +987,8 @@ apply locally_2d_forall.
 intros u v.
 pattern (S p) at 2; replace (S p) with (S (S p) -(0+1))%nat.
 apply ex_diff_n_deriv.
-rewrite Nat.add_0_l.
-apply lt_le_S; apply Nat.lt_0_succ.
-rewrite Nat.add_0_l.
-lia.
+rewrite Nat.add_0_l; apply ->Nat.succ_le_mono; exact (Nat.le_0_l _).
+by rewrite Nat.add_0_l Nat.sub_succ Nat.sub_0_r.
 Qed.
 
 Lemma Derive_partial_derive_aux2: forall p k f x y,
@@ -1052,7 +1045,7 @@ apply locally_2d_impl with (2:=H').
 apply locally_2d_forall.
 intros u'' v''.
 apply ex_diff_n_m.
-apply le_plus_r.
+apply Nat.le_add_l.
 rewrite partial_derive_add_zero.
 rewrite Nat.add_0_l.
 replace (S p) with (p+1)%nat by apply Nat.add_comm.
@@ -1063,10 +1056,8 @@ apply locally_2d_forall.
 intros u'' v''.
 replace (p+ S k)%nat with ((S p+S k)-(1+0))%nat.
 apply ex_diff_n_deriv.
-rewrite Nat.add_0_r.
-apply le_plus_trans; apply lt_le_S; apply Nat.lt_0_succ.
-rewrite Nat.add_0_r.
-lia.
+now rewrite Nat.add_0_r Nat.add_succ_l; apply ->Nat.succ_le_mono; apply Nat.le_0_l.
+now rewrite Nat.add_0_r Nat.add_succ_l Nat.sub_succ Nat.sub_0_r.
 Qed.
 
 Lemma Derive_partial_derive: forall p k f x y,
@@ -1117,9 +1108,9 @@ intros p Hp.
 assert (continuity_2d_pt (partial_derive p (S n - p) f) x y).
 apply locally_2d_singleton in Df.
 refine (proj1 (_: ex_diff_n (partial_derive p (S n - p) f) 0 x y)).
-replace O with (S n - (p + (S n - p)))%nat by rewrite le_plus_minus_r // Nat.sub_diag //.
+replace O with (S n - (p + (S n - p)))%nat by lia.
 cut (p + (S n - p) <= S n)%nat.
-2: now rewrite le_plus_minus_r.
+2: now rewrite Nat.add_comm Nat.sub_add.
 generalize (S n - p)%nat.
 clear Hp.
 revert f Df p.
@@ -1159,10 +1150,9 @@ exists (Rmax D1 D2).
 move: (locally_2d_and _ _ x y H1 H2) => {H1 H2} H.
 apply: locally_2d_impl H.
 apply locally_2d_forall => u v H p' Hp'.
-destruct (le_lt_or_eq _ _ Hp').
+destruct ((proj1 (Nat.lt_eq_cases _ _)) Hp').
 apply Rle_trans with (2 := Rmax_l _ _).
-apply H.
-now apply gt_S_le.
+now apply H, Nat.lt_succ_r.
 apply Rle_trans with (2 := Rmax_r _ _).
 now rewrite H0.
 (* *)
@@ -1225,18 +1215,18 @@ clear - Hk Hp ; intros [u' v'] (H1,H2).
 evar_last.
 apply Derive_correct.
 apply ex_diff_n_ex_deriv_inf_1 with (S n).
-now rewrite - le_plus_minus.
+now rewrite Nat.add_comm Nat.sub_add.
 exact H1.
 simpl ; reflexivity.
 apply locally_2d_singleton in HH.
 apply Derive_correct.
 apply ex_diff_n_ex_deriv_inf_2 with (S n).
-now rewrite - le_plus_minus.
+now rewrite Nat.add_comm Nat.sub_add.
 apply HH.
 apply locally_2d_singleton in HH.
 apply continuity_2d_pt_filterlim.
 apply ex_diff_n_continuity_inf_1 with (S n).
-now rewrite - le_plus_minus.
+now rewrite Nat.add_comm Nat.sub_add.
 apply HH.
 case => /= u' v'.
 reflexivity.
@@ -1315,13 +1305,13 @@ replace (sum_f_R0
    partial_derive (1 + i) (S (S k - (1 + i))) f (x + z * (u - x))
      (y + z * (v - y))) (S k - 1)).
 simpl ; ring.
-replace (S k - 1)%nat with k. 2: now apply plus_minus.
+replace (S k - 1)%nat with k. 2: now apply eq_sym, Nat.add_sub_eq_l.
 apply sum_eq.
 intros i Hi.
 replace (1+i)%nat with (S i) by reflexivity.
 replace (S (S k - S i))%nat with (S (S k) - S i)%nat.
 ring.
-now (rewrite minus_Sn_m; try apply le_n_S).
+now (rewrite Nat.sub_succ_l; try apply le_n_S).
 apply sum_eq.
 intros i Hi.
 replace (S k - i)%nat with (S (S k) - S i)%nat by reflexivity.
@@ -1334,7 +1324,7 @@ ring.
 intros.
 rewrite - (pascal (S k) i).
 ring.
-now apply le_lt_n_Sm.
+now apply Nat.lt_succ_r.
 (* *)
 destruct (Taylor_Lagrange g n 0 1 Rlt_0_1) as (t&Ht&Hg).
 intros t Ht.
@@ -1390,7 +1380,7 @@ split.
 apply Rabs_pos.
 apply Rmax_r.
 rewrite -pow_add.
-rewrite -le_plus_minus.
+rewrite Nat.add_comm Nat.sub_add.
 apply Rle_refl.
 exact Hn0.
 rewrite - scal_sum.

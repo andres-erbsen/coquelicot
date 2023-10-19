@@ -942,14 +942,11 @@ Proof.
   destruct n.
   apply Rplus_lt_compat_l, Rplus_lt_compat_l.
   now apply (IZR_lt 1 2).
-  now apply lt_S_n in H1.
-  destruct (le_lt_eq_dec _ _ (lt_n_Sm_le _ _ H1)) as [H2|H2].
-  apply Rlt_le_trans with (2 := Rmax_r _ _).
-  now apply IHN.
-  apply Rlt_le_trans with (2 := Rmax_l _ _).
-  rewrite H2.
-  apply Rplus_lt_compat_l, Rplus_lt_compat_l.
-  now apply (IZR_lt 1 2).
+  now apply <-Nat.succ_lt_mono in H1.
+  destruct (le_lt_eq_dec _ _ H1) as [H2%Nat.succ_lt_mono | [= ->]].
+  - now apply Rlt_le_trans with (2 := Rmax_r _ _), IHN.
+  - apply Rlt_le_trans with (2 := Rmax_l _ _).
+    now apply Rplus_lt_compat_l, IZR_lt.
 Qed.
 
 (** *** Order *)

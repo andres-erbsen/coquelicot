@@ -158,7 +158,7 @@ Proof.
     by field.
   by apply Rplus_lt_compat_r.
   case: (Hli (fn n x + eps / 2)) => {Hls Hli} N0 H0.
-  move: (H0 _ (le_plus_r N N0)) => {} H0 ; contradict H0.
+  move: (H0 _ (Nat.le_add_l N0 N)) => {} H0 ; contradict H0.
   apply Rle_not_lt, Rlt_le.
   replace (fn (N + N0)%nat x)
     with (fn n x + (fn (N + N0)%nat x - fn n x))
@@ -179,7 +179,7 @@ Proof.
   replace (fn m x) with (fn n x + (fn m x - fn n x)) by ring.
   apply Rplus_lt_compat_l, Rle_lt_trans with (1 := Rle_abs _) ; by apply H.
   case: (Hls (fn n x - eps / 2)) => {Hls} N0 H0.
-  move: (H0 _ (le_plus_r N N0)) => {} H0 ; contradict H0.
+  move: (H0 _ (Nat.le_add_l N0 N)) => {} H0 ; contradict H0.
   apply Rle_not_lt, Rlt_le.
   replace (fn (N + N0)%nat x)
     with (eps/2 + (fn (N + N0)%nat x - eps/2))
@@ -279,7 +279,7 @@ Proof.
     case: (H (pos_div_2 (pos_div_2 eps))) => {H} /= n2 H.
     set n := (n1 + n2)%nat.
     move: (fun y Hy => Hfn n (Nat.le_add_r _ _) y Hy) => {} Hfn.
-    move: (H n (le_plus_r _ _)) => {} H.
+    move: (H n (Nat.le_add_l _ _)) => {} H.
     move: (Hex x n Hx) => {} Hex.
     apply Lim_correct' in Hex.
     apply is_lim_spec in Hex.
@@ -708,10 +708,10 @@ Proof.
     exists N => n i Hn Hi.
     case: i Hi => /= [ | i] Hi.
     by apply Hcvs.
-    by apply lt_S_n, Nat.nlt_0_r in Hi.
+    by apply Nat.succ_lt_mono, Nat.nlt_0_r in Hi.
     case: (IH x1).
     move => i Hi.
-    by apply (Hl (S i)), lt_n_S.
+    by apply (Hl (S i)), (proj1 (Nat.succ_lt_mono _ _)).
     move => N0 HN0.
     move: (Hcvs x0 (Hl O (Nat.lt_0_succ _))) ;
     move/Lim_seq_correct' => {} Hcvs.
@@ -742,7 +742,7 @@ Proof.
     by apply Hx.
     case: (Rlt_le_dec x x1) => Hx'.
     exists O ; split => /=.
-    by apply lt_n_S, Nat.lt_0_succ.
+    by apply ->Nat.succ_lt_mono; apply Nat.lt_0_succ.
     split ; intuition.
     case: (IH x1 x2).
     by intuition.
