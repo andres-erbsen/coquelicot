@@ -128,7 +128,7 @@ Proof.
   case: (le_dec n (S m)).
   intro ; lia.
   intro H2.
-  rewrite not_le_minus_0 in H1 => //.
+  rewrite (proj2 (Nat.sub_0_le _ _)) in H1 => //.
   contradict H2.
   by eapply Nat.le_trans, Nat.le_succ_diag_r.
   contradict H2.
@@ -140,7 +140,7 @@ Proof.
   apply Bool.andb_false_iff in H0.
   case: H0 => //.
   move/SSR_leq: H1 ; by case: ssrnat.leq.
-  rewrite <- le_plus_minus by lia.
+  rewrite Nat.add_comm Nat.sub_add; [| lia].
   move/le_n_S/SSR_leq: H2 ; by case: ssrnat.leq.
 Qed.
 
@@ -172,7 +172,7 @@ Lemma iter_nat_point a n :
   iter_nat a n n = a n.
 Proof.
   unfold iter_nat.
-  rewrite -minus_Sn_m // Nat.sub_diag /=.
+  rewrite Nat.sub_succ_l // Nat.sub_diag /=.
   by apply neutral_r.
 Qed.
 

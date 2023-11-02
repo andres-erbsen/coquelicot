@@ -2987,7 +2987,7 @@ Proof.
   now replace m with O by intuition.
   apply le_lt_eq_dec in Hn ; case: Hn => Hn.
   apply IH => //.
-  by apply lt_n_Sm_le.
+  by apply Nat.lt_succ_r.
   rewrite Hn in Hx |- * => {m Hn} /=.
   eapply is_derive_ext_loc.
   eapply filter_imp.

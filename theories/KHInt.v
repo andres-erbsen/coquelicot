@@ -167,7 +167,7 @@ split.
 unfold pointed_subdiv ; unfold s'.
 intros i Hi.
 rewrite SF_size_rcons in Hi.
-apply lt_n_Sm_le in Hi.
+apply ->Nat.lt_succ_r in Hi.
 case (eq_nat_dec i (SF_size s)) => His.
 rewrite His.
 replace (nth 0 (SF_lx (SF_rcons s (b', b'))) (SF_size s)) with (last (SF_h s) (SF_lx s)).
@@ -795,7 +795,7 @@ unfold ith_step in H.
 change (nth 0 (SF_lx ptd) (S i)) with (nth 0 (SF_lx (SF_cons h ptd)) (S (S i))).
 change (nth 0 (SF_lx ptd) i) with (nth 0 (SF_lx (SF_cons h ptd)) (S i)).
 apply H.
-rewrite SF_size_cons ; now apply lt_n_S.
+rewrite SF_size_cons ; now apply <-Nat.lt_succ_r.
 split.
 apply ptd_cons with h.
 apply H0.

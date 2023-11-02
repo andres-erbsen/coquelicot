@@ -456,13 +456,11 @@ Proof.
   evar_last.
   apply is_derive_scal, is_derive_pow, is_derive_id.
   rewrite MyNat.sub_succ_r.
-  change one with 1.
-  rewrite {1 2} (S_pred (p - i) O) /fact -/fact ?mult_INR.
-  field.
-  split.
-  apply INR_fact_neq_0.
-  apply not_0_INR, sym_not_eq, O_S.
-  by apply lt_minus_O_lt.
+  change one with 1; rewrite -!Rmult_assoc; f_equal; rewrite Rmult_1_r.
+  assert (p - i <> 0)%nat as E by (now apply Nat.sub_gt).
+  rewrite -{1}(Nat.succ_pred (p - i)); [| exact E].
+  rewrite fact_simpl Nat.succ_pred ?mult_INR; [| exact E]. field.
+  split; [exact (INR_fact_neq_0 _) | now apply not_0_INR].
 Qed.
 
 Lemma Derive_n_pow_smalli: forall i p x, (i <= p)%nat ->
@@ -478,7 +476,7 @@ Lemma is_derive_n_pow_bigi: forall i p x,  (p < i) %nat ->
 Proof.
   elim => /=  [ | i IH] p x Hip.
   by apply Nat.nlt_0_r in Hip.
-  apply lt_n_Sm_le, le_lt_eq_dec in Hip.
+  apply ->Nat.lt_succ_r in Hip; apply le_lt_eq_dec in Hip.
   case: Hip => [Hip | ->] ;
   eapply is_derive_ext.
   intros t ; by apply sym_equal, is_derive_n_unique, IH.
@@ -554,7 +552,7 @@ Proof.
   apply Rnot_lt_le => H.
   apply Rminus_lt_0 in H.
   case: (Hy _ H) => N {} Hy.
-  move: (Hy _ (le_plus_r n N)) => {Hy}.
+  move: (Hy _ (MyNat.le_add_l N n)) => {Hy}.
   apply Rle_not_lt.
   apply Rle_trans with (2 := Rle_abs _).
   apply Rplus_le_compat_r.
@@ -664,7 +662,7 @@ Proof.
   rewrite /Pser /infinite_sum in Hx.
   apply Rnot_lt_le => H.
   case: (Hx _ (proj1 (Rminus_lt_0 _ _) H)) => N {} Hx.
-  move: (Hx _ (le_plus_r 2 N)) => {Hx}.
+  move: (Hx _ (MyNat.le_add_l N 2)) => {Hx}.
   apply Rle_not_lt.
   apply Rle_trans with (2 := Rle_abs _).
   apply Rplus_le_compat_r.

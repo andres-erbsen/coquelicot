@@ -152,11 +152,11 @@ case /(_ eps) => [P [[N HN] HP]].
 exists (S N).
 intros [|u] v Hu Hv.
 elim Nat.nle_succ_0 with (1 := Hu).
-destruct (le_or_lt u v) as [Huv|Huv].
+destruct (Nat.le_gt_cases u v) as [Huv|Huv].
 rewrite (sum_n_m_sum_n _ _ _ Huv).
 apply HP ; apply HN.
 now apply le_S_n.
-now apply le_Sn_le.
+now apply Nat.lt_le_incl.
 rewrite sum_n_m_zero.
 rewrite norm_zero.
 apply cond_pos.
@@ -178,7 +178,7 @@ now exists N.
 intros u v.
 wlog Huv: u v / (u <= v)%nat.
 intros H.
-destruct (le_or_lt u v) as [Huv|Huv].
+destruct (Nat.le_gt_cases u v) as [Huv|Huv].
 now apply H.
 intros Hu Hv.
 apply ball_sym.
@@ -806,7 +806,7 @@ Proof.
     apply f_equal2 ; apply f_equal ; intuition.
     rewrite IH ; apply f_equal, f_equal2 ; apply f_equal.
     ring.
-    rewrite ?(Nat.add_comm _ (S m)) -minus_plus_simpl_l_reverse //=.
+    rewrite ?(Nat.add_comm _ (S m)) -MyNat.add_sub_add_l //=.
     apply Nat.le_0_l.
     rewrite /sum_f.
     elim: (S (S n) - S (S (n - S m)))%nat => {IH} [ | k IH] ;
@@ -818,13 +818,13 @@ Proof.
     rewrite sum_f_Sn_m ?Nat.sub_0_r ; try by intuition.
     ring.
     replace (S (S n)) with (S n + 1)%nat.
-    rewrite -minus_plus_simpl_l_reverse.
+    rewrite -MyNat.add_sub_add_l.
     simpl; apply eq_sym, Nat.sub_0_r.
     now rewrite Nat.add_comm.
     elim: n => [ | n IH] //.
     rewrite -plus_n_Sm plus_Sn_m.
-    apply lt_n_S ; intuition.
-    have H2 : forall n, sum_f_R0 a (Div2.div2 n)%nat * sum_f_R0 b (Div2.div2 n)%nat <=
+    apply Nat.lt_succ_r ; intuition.
+    have H2 : forall n, sum_f_R0 a (Nat.div2 n)%nat * sum_f_R0 b (Nat.div2 n)%nat <=
       sum_f_R0
       (fun k : nat => sum_f_R0 (fun p : nat => a p * b (k - p)%nat) k)
       n.
@@ -839,7 +839,7 @@ Proof.
       apply cond_pos_sum => l ; by apply Rmult_le_pos.
 
     change (is_lim_seq (sum_n (fun n : nat => sum_f_R0 (fun k : nat => a k * b (n - k)%nat) n)) (Finite (la * lb))).
-    apply is_lim_seq_le_le with (u := fun n => sum_f_R0 a (Div2.div2 n) * sum_f_R0 b (Div2.div2 n))
+    apply is_lim_seq_le_le with (u := fun n => sum_f_R0 a (Nat.div2 n) * sum_f_R0 b (Nat.div2 n))
     (w := fun n => sum_f_R0 a n * sum_f_R0 b n).
     intros n; rewrite sum_n_Reals.
     by split.
@@ -856,13 +856,10 @@ Proof.
     apply le_double.
     apply le_S_n.
     apply Nat.le_trans with (1 := Hn).
-    apply (Div2.ind_0_1_SS (fun n => (n <= S (2 * Div2.div2 n))%nat)).
-    by apply Nat.le_0_l.
-    by apply Nat.le_refl.
-    move => k Hk.
-    replace (Div2.div2 (S (S k))) with (S (Div2.div2 k)) by auto.
-    replace (2 * S (Div2.div2 k))%nat with (S (S (2 * Div2.div2 k))) by ring.
-    by repeat apply le_n_S.
+    destruct (Nat.Even_or_Odd n) as [He | Ho].
+    - rewrite {1}(MyNat.Even_double n); [| exact He].
+      now rewrite Nat.double_twice; apply Nat.le_succ_diag_r.
+    - now rewrite {1}(MyNat.Odd_double n); [| exact Ho]; rewrite Nat.double_twice.
 
     apply is_lim_seq_mult'.
     apply filterlim_ext with (2:=Hla); apply sum_n_Reals.
@@ -1044,7 +1041,7 @@ Proof.
     by apply Rabs_pos.
     apply pow_le.
     by apply Rlt_le, Rlt_trans with (1 := Rlt_0_1).
-    by apply H, le_plus_r.
+    by apply H, MyNat.le_add_l.
     by apply IH.
   move => {} H.
   have : Finite 0 = p_infty.

@@ -809,7 +809,7 @@ Proof.
   case: m Hnm => [|m] Hnm //.
   rewrite -iter_nat_S.
   apply IH.
-  by apply lt_S_n.
+  by apply Nat.succ_lt_mono.
 Qed.
 
 Lemma sum_n_m_const_zero (n m : nat) :
@@ -4208,7 +4208,7 @@ Proof.
   by apply Nat.nlt_0_r in Hi.
   destruct i.
   by [].
-  now apply (IHn (fun n => u (S n))), lt_S_n.
+  now apply (IHn (fun n => u (S n))), Nat.succ_lt_mono.
 Qed.
 Lemma coeff_Tn_ext {T} {n : nat} (x1 x2 : T) (v1 v2 : Tn n T) :
   v1 = v2 <-> forall i, (i < n)%nat -> coeff_Tn x1 v1 i = coeff_Tn x2 v2 i.
@@ -4219,13 +4219,13 @@ Proof.
     by apply Nat.nlt_0_r in Hi.
     destruct i ; simpl.
     by [].
-    by apply IHn, lt_S_n.
+    by apply IHn, Nat.succ_lt_mono.
   + induction n => H.
     apply unit_ind ; move: (v1) ; now apply unit_ind.
     apply injective_projections.
     by apply (H O), Nat.lt_0_succ.
     apply IHn => i Hi.
-    by apply (H (S i)), lt_n_S.
+    by apply (H (S i)), (proj1 (Nat.succ_lt_mono _ _)).
 Qed.
 Lemma mk_Tn_ext {T} (n : nat) (u1 u2 : nat -> T) :
   (forall i, (i < n)%nat -> (u1 i) = (u2 i))
@@ -4237,10 +4237,10 @@ Proof.
   apply f_equal2.
   by apply H, Nat.lt_0_succ.
   apply IHn => i Hi.
-  by apply H, lt_n_S.
+  by apply H, (proj1 (Nat.succ_lt_mono _ _)).
   destruct i.
   by apply (f_equal (@fst _ _)) in H.
-  move: i {H0} (lt_S_n _ _ H0).
+  move: i {H0} (proj2 (Nat.succ_lt_mono _ _) H0).
   apply IHn.
   by apply (f_equal (@snd _ _)) in H.
 Qed.
@@ -4515,7 +4515,7 @@ Proof.
     apply sum_n_m_ext_loc ; simpl => m' [ _ Hm'].
     apply f_equal.
     rewrite coeff_mat_bij //.
-    by apply le_lt_n_Sm, Hm'.
+    by apply Nat.lt_succ_r, Hm'.
   - transitivity (sum_n (fun l0 : nat => sum_n
       (fun l1 : nat => mult (coeff_mat zero A n' l0) (mult (coeff_mat zero B l0 l1) (coeff_mat zero C l1 l'))) (pred k)) (pred m)).
     destruct m ; simpl.
@@ -4540,7 +4540,7 @@ Proof.
   apply mult_assoc.
   apply f_equal2.
   unfold Mmult ; rewrite coeff_mat_bij //.
-  by apply le_lt_n_Sm.
+  by apply Nat.lt_succ_r.
   by [].
 Qed.
 
@@ -4556,10 +4556,10 @@ Proof.
   erewrite sum_n_ext_loc ; last first.
   move => /= k Hk.
   rewrite /Mone coeff_mat_bij //.
-  by apply le_lt_n_Sm.
+  by apply Nat.lt_succ_r.
   rewrite /sum_n (sum_n_m_Chasles _ _ j) //.
   2: by apply Nat.le_0_l.
-  2: by apply lt_n_Sm_le.
+  2: by apply Nat.lt_succ_r.
   rewrite (sum_n_m_ext_loc _ (fun _ => zero) (S j)).
   rewrite sum_n_m_const_zero plus_zero_r.
   rewrite -/(sum_n _ _).
@@ -4572,7 +4572,7 @@ Proof.
   move => k Hk.
   rewrite Mone_seq_not_diag.
   by apply mult_zero_r.
-  by apply MyNat.lt_neq, le_lt_n_Sm.
+  by apply MyNat.lt_neq, Nat.lt_succ_r.
   move => k [Hk _].
   rewrite Mone_seq_not_diag.
   by apply mult_zero_r.
@@ -4591,10 +4591,10 @@ Proof.
   erewrite sum_n_ext_loc ; last first.
   move => /= k Hk.
   rewrite /Mone coeff_mat_bij //.
-  by apply le_lt_n_Sm.
+  by apply Nat.lt_succ_r.
   rewrite /sum_n (sum_n_m_Chasles _ _ i) //.
   2: by apply Nat.le_0_l.
-  2: by apply lt_n_Sm_le.
+  2: by apply Nat.lt_succ_r.
   rewrite (sum_n_m_ext_loc _ (fun _ => zero) (S i)).
   rewrite sum_n_m_const_zero plus_zero_r.
   rewrite -/(sum_n _ _).
@@ -4607,7 +4607,7 @@ Proof.
   move => k Hk.
   rewrite Mone_seq_not_diag.
   by apply mult_zero_l.
-  by apply sym_not_eq, MyNat.lt_neq, le_lt_n_Sm.
+  by apply sym_not_eq, MyNat.lt_neq, Nat.lt_succ_r.
   move => k [Hk _].
   rewrite Mone_seq_not_diag.
   by apply mult_zero_l.
@@ -4629,7 +4629,7 @@ Proof.
   apply sum_n_m_ext_loc => l [_ Hl].
   rewrite ?coeff_mat_bij => //=.
   by apply mult_distr_r.
-  by apply le_lt_n_Sm.
+  by apply Nat.lt_succ_r.
 Qed.
 
 Lemma Mmult_distr_l {m n k} :
@@ -4647,7 +4647,7 @@ Proof.
   apply sum_n_m_ext_loc => l [_ Hl].
   rewrite ?coeff_mat_bij => //=.
   by apply mult_distr_l.
-  by apply le_lt_n_Sm.
+  by apply Nat.lt_succ_r.
 Qed.
 
 Definition matrix_Ring_mixin {n} :=
@@ -4936,7 +4936,7 @@ Proof.
   by rewrite /sum_f Nat.sub_diag /=.
   apply Nat.le_antisymm => //.
   apply not_le in H.
-  by apply lt_le_S.
+  by apply Nat.le_succ_l.
 Qed.
 
 Lemma sum_n_m_const (n m : nat) (a : R) :

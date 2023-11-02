@@ -18,7 +18,6 @@ but WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 COPYING file for more details.
 *)
-
 From Coq Require Import Reals Psatz ssreflect ssrbool.
 From mathcomp Require Import seq.
 
@@ -94,11 +93,12 @@ Proof.
   case => [| i] Hi x0 ; simpl in Hi.
   apply H.
   case: (IHs t) => {} IHs _ ;
-  apply (IHs (proj2 H) i (lt_S_n _ _ Hi) x0).
+  apply (IHs (proj2 H) i (proj2 (Nat.succ_lt_mono _ _) Hi) x0).
   split.
   apply (H O (Nat.lt_0_succ _) t).
   case: (IHs t) => {IHs} _ IHs.
-  apply: IHs => i Hi x0 ; apply: (H (S i)) ; simpl ; apply lt_n_S, Hi.
+  apply: IHs => i Hi x0 ; apply: (H (S i)) ; simpl ; apply ->Nat.succ_lt_mono.
+  now apply Hi.
 Qed.
 Lemma sorted_cat  {T : Type} (Ord : T -> T -> Prop) (s1 s2 : seq T) x0 :
   sorted Ord s1 -> sorted Ord s2 -> Ord (last x0 s1)  (head x0 s2)
@@ -136,7 +136,7 @@ Proof.
   apply sym_eq, Nat.le_antisymm.
   apply MyNat.le_pred_le_succ.
   apply not_le in Hi1.
-  by apply lt_n_Sm_le.
+  by apply Nat.lt_succ_r.
   replace i with (Peano.pred (S i)) by auto.
   by apply le_pred.
   have : ~ (ssrnat.leq (S i) (size s1)).
@@ -156,10 +156,10 @@ Proof.
   unfold ssrnat.addn, ssrnat.addn_rec in Hi.
   by rewrite Nat.add_0_l in Hi.
   case: i Hi Hi0 => [ | i] /= Hi Hi0.
-  by apply lt_S_n, Nat.nlt_0_r in Hi0.
+  by apply Nat.lt_succ_r, Nat.nlt_0_r in Hi0.
   apply IH ; by intuition.
   apply not_le in Hi0.
-  rewrite minus_Sn_m ; by intuition.
+  rewrite Nat.sub_succ_l ; by intuition.
 Qed.
 
 Lemma sorted_head (s : seq R) i :
@@ -168,14 +168,14 @@ Proof.
   case: s => [| h s].
    move => _ Hi ; by apply Nat.nlt_0_r in Hi.
   elim: s h i => [| h0 s IH] h i Hs Hi x0.
-    apply lt_n_Sm_le, Nat.le_0_r in Hi ; rewrite Hi ; apply Rle_refl.
+    apply Nat.lt_succ_r, Nat.le_0_r in Hi ; rewrite Hi ; apply Rle_refl.
   case: i Hi => [| i] Hi.
   apply Rle_refl.
   apply Rle_trans with (r2 := head x0 (h0::s)).
   apply Hs.
   apply IH.
   apply Hs.
-  apply lt_S_n, Hi.
+  apply ->Nat.lt_succ_r; now apply Hi.
 Qed.
 
 Lemma sorted_incr (s : seq R) i j : sorted Rle s -> (i <= j)%nat -> (j < size s)%nat
@@ -237,11 +237,11 @@ Proof.
   split => H.
   case => [ /= | i] ; rewrite size_compat => Hi ; simpl in Hi.
   apply H.
-  apply (proj1 (IHs h) (proj2 H) i) ; rewrite size_compat /= ; apply lt_S_n => //.
+  apply (proj1 (IHs h) (proj2 H) i) ; rewrite size_compat /= ; apply Nat.lt_succ_r => //.
   split.
   apply (H O) ; rewrite size_compat /= ; apply Nat.lt_0_succ.
   apply IHs => i ; rewrite size_compat /= => Hi ; apply (H (S i)) ;
-  rewrite size_compat /= ; apply lt_n_S, Hi.
+  rewrite size_compat /= ; apply ->Nat.succ_lt_mono; now apply Hi.
 Qed.
 
 (** seq_step *)
@@ -304,16 +304,16 @@ Lemma nth_le_seq_step x0 (l : seq R) (i : nat) : (S i < size l)%nat ->
 Proof.
   elim: i l => [ | i IH] ; case => [ | x1 l] /= Hi.
   by apply Nat.nlt_0_r in Hi.
-  apply lt_S_n in Hi.
+  apply Nat.succ_lt_mono in Hi.
   destruct l as [ | x2 l].
   by apply Nat.nlt_0_r in Hi.
   by apply Rmax_l.
   by apply Nat.nlt_0_r in Hi.
-  apply lt_S_n in Hi.
+  apply Nat.succ_lt_mono in Hi.
   move: (IH l Hi).
   destruct l as [ | x2 l] ; simpl.
   by apply Nat.nlt_0_r in Hi.
-  simpl in Hi ; apply lt_S_n in Hi.
+  simpl in Hi ; apply Nat.succ_lt_mono in Hi.
   move => {} IH.
   eapply Rle_trans.
   by apply IH.
@@ -699,7 +699,7 @@ Proof.
   [ | apply SF_cons_dec with (s := ptd) => {ptd} [ x1 | [x1 y1] ptd] IH] =>
   Hptd ; try split.
   apply Rle_trans with x1 ; [apply (Hptd O) | apply (Hptd 1%nat)] ;
-  rewrite ?SF_size_cons ; repeat apply lt_n_S ; apply Nat.lt_0_succ.
+      rewrite ?SF_size_cons ; repeat apply ->Nat.succ_lt_mono ; apply Nat.lt_0_succ.
   apply IH, (ptd_cons (x0,y0)) => //.
 Qed.
 
@@ -719,7 +719,7 @@ Proof.
   apply (Hx O), Nat.lt_0_succ.
   apply IH =>//.
   by apply ptd_cons with x0.
-  by apply lt_S_n, Hi.
+  by apply <-Nat.succ_lt_mono; apply Hi.
 Qed.
 
 (** * SF_seq for Chasles *)
@@ -815,7 +815,7 @@ Proof.
   apply SF_cons_ind with (s := s) => {s} [x0 | [x1 y1] s IH] /= Hx0 H.
   move => i /= Hi.
   unfold SF_size in Hi ; simpl in Hi.
-  apply lt_n_Sm_le, Nat.le_0_r in Hi.
+  apply Nat.lt_succ_r, Nat.le_0_r in Hi.
   rewrite Hi ; simpl ; split.
   by [].
   by apply Rle_refl.
@@ -827,10 +827,10 @@ Proof.
   destruct i => /= Hi.
   by apply H0.
   apply (IH i).
-  apply lt_S_n, Hi.
+  apply Nat.succ_lt_mono, Hi.
   move => i /= Hi.
   unfold SF_size in Hi ; simpl in Hi.
-  apply lt_n_Sm_le, Nat.le_0_r in Hi.
+  apply Nat.lt_succ_r, Nat.le_0_r in Hi.
   rewrite Hi ; simpl ; split.
   apply Rmin_case.
   apply (H O).
@@ -991,7 +991,7 @@ Proof.
   contradict Hx' ; apply Rle_not_lt, Hx.
   move: h Hs Hx ; apply SF_cons_ind with (s := s) => {s} [x1 | h0 s IH] h Hs /= Hx.
     case: sorted_dec => [/= [i [Hi' Hi]] /= |Hi].
-    by apply lt_S_n, lt_S_n, Nat.nlt_0_r in Hi.
+    by apply Nat.succ_lt_mono, Nat.succ_lt_mono, Nat.nlt_0_r in Hi.
   case: Hx => Hx Hx' ; apply Rle_not_lt in Hx ; case: Rle_dec => //.
 (* s = SF_cons _ (SF_cons _ _) *)
   case: Rlt_dec => Hx'.
@@ -1000,7 +1000,7 @@ Proof.
   apply Rle_not_lt, Rle_trans with (2 := proj1 (proj1 Hi)).
   simpl in Hs ; elim: (unzip1 (SF_t s)) (fst h0) (SF_h s) (i) (proj2 Hs) (proj2 Hi)
     => {s IH Hs Hx Hi h h0} [| h1 s IH] h h0 n Hs Hn.
-    repeat apply lt_S_n in Hn ; by apply Nat.nlt_0_r in Hn.
+    repeat apply <-Nat.succ_lt_mono in Hn ; by apply Nat.nlt_0_r in Hn.
     case: n Hn => [| n] Hn.
     apply Rle_refl.
   apply Rle_trans with (1 := proj1 Hs) => //= ; intuition.
@@ -1017,7 +1017,7 @@ Proof.
 (* i,j < size s - 2 *)
   move : h h0 i j Hs {Hx Hx'} Hxi Hi Hxj Hj ; apply SF_cons_ind with (s := s)
     => {s} [x1 | h1 s IH] h h0 i j Hs //= Hxi Hi Hxj Hj.
-    by apply lt_S_n, lt_S_n, Nat.nlt_0_r in Hi.
+    by apply Nat.succ_lt_mono, Nat.succ_lt_mono, Nat.nlt_0_r in Hi.
   case: j Hxj Hj => [/= | j] Hxj Hj.
   case: Hxj => _ Hxj ; contradict Hxj ; apply Rle_not_lt, Rle_trans with (2 := proj1 Hxi).
   elim: (i) Hi => {i Hxi IH} //= [| i IH] Hi.
@@ -1034,8 +1034,8 @@ Proof.
   [apply Hs | simpl ; intuition].
   apply (IH h0 h1 i j) => //.
   apply Hs.
-  apply lt_S_n, Hi.
-  apply lt_S_n, Hj.
+  apply Nat.succ_lt_mono, Hi.
+  apply Nat.succ_lt_mono, Hj.
 (* i < j = size s - 2 *)
   simpl in Hxi, Hj ; case: Hxi => _ Hxi ; contradict Hxi ;
   apply Rle_not_lt, Rle_trans with (2 := proj1 Hj).
@@ -1043,7 +1043,7 @@ Proof.
   elim: i (fst h) (fst h0) (SF_h s) (unzip1 (SF_t s))
     => {s Hx Hx' Hj h y0 h0} [| i IH] h h0 h1 s Hi Hs.
     case: s Hi Hs => [| h2 s] Hi Hs /=.
-    by apply lt_S_n, lt_S_n, Nat.nlt_0_r in Hi.
+    by apply Nat.succ_lt_mono, Nat.succ_lt_mono, Nat.nlt_0_r in Hi.
     elim: s h h0 h1 h2 {Hi} Hs => [| h3 s IH] h h0 h1 h2 Hs /=.
     apply Rle_refl.
     apply Rle_trans with (r2 := h2).
@@ -1051,9 +1051,9 @@ Proof.
     apply (IH h0 h1).
     apply (proj2 Hs).
   case: s Hi Hs => [| h2 s] Hi Hs.
-    by apply lt_S_n, lt_S_n, Nat.nlt_0_r in Hi.
+    by apply Nat.succ_lt_mono, Nat.succ_lt_mono, Nat.nlt_0_r in Hi.
   apply (IH h0 h1 h2 s).
-  apply lt_S_n, Hi.
+  apply Nat.succ_lt_mono, Hi.
   apply Hs.
 (* j < i = size s - 2 *)
   simpl in Hxj, Hi ; case: Hxj => _ Hxj ; contradict Hxj ;
@@ -1069,9 +1069,9 @@ Proof.
     apply (IH h0 h1 h2).
     apply (proj2 Hs).
   case: s Hj Hs => [| h2 s] Hj Hs.
-    by apply lt_S_n, lt_S_n, lt_S_n, Nat.nlt_0_r in Hj.
+    by apply Nat.succ_lt_mono, Nat.succ_lt_mono, Nat.succ_lt_mono, Nat.nlt_0_r in Hj.
   apply (IH h0 h1 h2 s).
-  apply lt_S_n, Hj.
+  apply Nat.succ_lt_mono, Hj.
   apply Hs.
 Qed.
 
@@ -1211,7 +1211,7 @@ Proof.
   apply Hf, Hs.
   apply IH.
   apply Hs.
-  by apply lt_S_n.
+  by apply Nat.succ_lt_mono.
 Qed.
 
 (** ** SF_fun *)
@@ -1310,16 +1310,16 @@ Proof.
   rewrite (H O).
   rewrite Rmax_comm /Rmax ; case: Rle_dec => // H1.
   contradict H1 ; by apply Rabs_pos.
-  by apply lt_n_S, Nat.lt_0_succ.
+  by apply ->Nat.succ_lt_mono; apply Nat.lt_0_succ.
   rewrite -(IH (x1::x2::l)) /=.
   rewrite (H O).
   rewrite (H 1%nat).
   rewrite Rmax_assoc.
   apply f_equal2 => //.
   rewrite /Rmax ; by case: Rle_dec.
-  by apply lt_n_S, lt_n_S, Nat.lt_0_succ.
-  by apply lt_n_S, Nat.lt_0_succ.
-  now intros ; apply (H (S i)), lt_n_S.
+  by apply ->Nat.succ_lt_mono; apply ->Nat.succ_lt_mono; apply Nat.lt_0_succ.
+  by apply ->Nat.succ_lt_mono; apply Nat.lt_0_succ.
+  now intros ; apply (H (S i)); apply ->Nat.succ_lt_mono.
   by apply eq_add_S.
 Qed.
 
@@ -1416,12 +1416,12 @@ split ; [|split ; [|split]].
     apply Req_le.
     rewrite (H 0%nat).
     now apply Rabs_pos_eq.
-    apply lt_n_S.
+    apply ->Nat.succ_lt_mono.
     apply Nat.lt_0_succ.
     apply IHl.
     intros i Hi.
     apply (H (S i)).
-    now apply lt_n_S.
+    now apply ->Nat.succ_lt_mono.
   + rewrite size_mkseq.
     intros i Hi.
     rewrite !nth_mkseq.
@@ -1437,7 +1437,7 @@ split ; [|split ; [|split]].
   intros i Hi.
   rewrite SF_ly_f2.
   rewrite nth_behead.
-  apply gt_S_le, SSR_leq in Hi.
+  apply Nat.lt_succ_r, SSR_leq in Hi.
   rewrite (nth_pairmap 0).
   change (nth 0 (0 :: unif_part a b n) (S i)) with (nth 0 (unif_part a b n) i).
   apply Hf.
@@ -1974,7 +1974,7 @@ Proof.
   apply (f_equal2 (fun x y => plus (scal (SF_h s - fst h0) x) y)).
   by apply sym_eq, (Heq O), Nat.lt_0_succ.
   apply IH => i Hi.
-  now apply (Heq (S i)), lt_n_S.
+  now apply (Heq (S i)); apply ->Nat.succ_lt_mono.
 Qed.
 
 Lemma RInt_val_comp_opp (f : R -> V) (a b : R) (n : nat) :
@@ -2137,8 +2137,8 @@ Proof.
     => {s} [x1 | h0 s IH] h ; case => [| i ] x z0' Hs Hi Hx0 Hx1 //= ; case: Rlt_dec => Hx' //.
   now contradict Hx' ; apply Rle_not_lt, Rlt_le, Hx0.
   now case: Rle_dec => Hx'' // ; contradict Hx'' ; apply Rlt_le, Hx1.
-  now rewrite /= in Hi ; by apply lt_S_n, Nat.nlt_0_r in Hi.
-  now rewrite /= in Hi ; by apply lt_S_n, Nat.nlt_0_r in Hi.
+  now rewrite /= in Hi ; by apply Nat.succ_lt_mono, Nat.nlt_0_r in Hi.
+  now rewrite /= in Hi ; by apply Nat.succ_lt_mono, Nat.nlt_0_r in Hi.
   now contradict Hx' ; apply Rle_not_lt, Rlt_le, Hx0.
   now case: Rlt_dec => Hx'' //.
   now contradict Hx' ; apply Rle_not_lt, Rlt_le, Rle_lt_trans with (2 := Hx0) ;
@@ -2147,7 +2147,7 @@ Proof.
   apply (sorted_head (SF_lx (SF_cons h (SF_cons h0 s))) (S i) Hs Hi' 0).
   rewrite -(IH h0 i x (snd h)) //=.
   apply Hs.
-  rewrite ?SF_lx_cons /= in Hi |-* ; apply lt_S_n, Hi.
+  rewrite ?SF_lx_cons /= in Hi |-* ; apply Nat.succ_lt_mono, Hi.
 Qed.
 
 Definition SF_compat_le (s : @SF_seq R) (pr : SF_sorted Rle s) :
@@ -2252,16 +2252,16 @@ Proof.
     [field ; apply Rgt_not_eq | apply SSR_leq | apply SSR_leq ] ; intuition].
   case: (unif_part a b n) (unif_part_sort a b n Hab) i Hi x Hx => {a b Hab n} [| h s] Hs /= i Hi.
     by apply Nat.nlt_0_r in Hi.
-  case: (s) Hs (i) (lt_S_n _ _ Hi) => {s i Hi} [| h0 s] Hs /= i Hi.
+  case: (s) Hs (i) ((proj2 (Nat.succ_lt_mono _ _) Hi)) => {s i Hi} [| h0 s] Hs /= i Hi.
     by apply Nat.nlt_0_r in Hi.
-  elim: (s) h h0 Hs (i) (lt_S_n _ _ Hi) => {s i Hi} [|h1 s IH] h h0 Hs /= i Hi x Hx.
+  elim: (s) h h0 Hs (i) (proj2 (Nat.succ_lt_mono _ _) Hi) => {s i Hi} [|h1 s IH] h h0 Hs /= i Hi x Hx.
     by apply Nat.nlt_0_r in Hi.
   case: i Hx Hi => [|i]/= Hx Hi.
   rewrite /SF_fun /=.
   case: Rlt_dec => [Hx0 | _ ].
   contradict Hx0 ; apply Rle_not_lt, Hx.
   case: Rlt_dec => // Hx0 ; contradict Hx0 ; apply Hx.
-  rewrite -(IH h0 h1 (proj2 Hs) i (lt_S_n _ _ Hi) x Hx).
+  rewrite -(IH h0 h1 (proj2 Hs) i ((proj2 (Nat.succ_lt_mono _ _) Hi)) x Hx).
   rewrite /SF_fun /= ; case: Rlt_dec => [ Hx0 | _ ] //.
   contradict Hx0 ; apply Rle_not_lt, Rle_trans with (1 := proj1 Hs),
   Rle_trans with (2 := proj1 Hx), (sorted_head [:: h0, h1 & s] _ (proj2 Hs)) ;
@@ -2298,7 +2298,7 @@ Proof.
   case: Rlt_dec => [ Hx0 | _ ] //.
   contradict Hx0 ; apply Rle_not_lt, Rle_trans with (2 := proj1 Hx),
   (sorted_head [:: h0, h1 & s] _ (proj2 Hs)) ; simpl; intuition.
-  rewrite size_mkseq ; by apply lt_n_S, Nat.lt_0_succ.
+  rewrite size_mkseq ; by apply ->Nat.succ_lt_mono; apply Nat.lt_0_succ.
 Qed.
 
 Lemma RInt_val_Reals (f : R -> R) (a b : R) (n : nat) :
@@ -2526,16 +2526,16 @@ Proof.
 (* i < n *)
   case: (unif_part a b n) (unif_part_sort a b n Hab) i Hi x Hx => {a b Hab n} [| h s] Hs /= i Hi.
     by apply Nat.nlt_0_r in Hi.
-  case: (s) Hs (i) (lt_S_n _ _ Hi) => {s i Hi} [| h0 s] Hs /= i Hi.
+  case: (s) Hs (i) ((proj2 (Nat.succ_lt_mono _ _)) Hi) => {s i Hi} [| h0 s] Hs /= i Hi.
     by apply Nat.nlt_0_r in Hi.
-  elim: (s) h h0 Hs (i) (lt_S_n _ _ Hi) => {s i Hi} [|h1 s IH] h h0 Hs /= i Hi x Hx.
+  elim: (s) h h0 Hs (i) ((proj2 (Nat.succ_lt_mono _ _)) Hi) => {s i Hi} [|h1 s IH] h h0 Hs /= i Hi x Hx.
     by apply Nat.nlt_0_r in Hi.
   case: i Hx Hi => [|i]/= Hx Hi.
   rewrite /SF_fun /=.
   case: Rlt_dec => [Hx0 | _ ].
   contradict Hx0 ; apply Rle_not_lt, Hx.
   case: Rlt_dec => // Hx0 ; contradict Hx0 ; apply Hx.
-  rewrite -(IH h0 h1 (proj2 Hs) i (lt_S_n _ _ Hi) x Hx).
+  rewrite -(IH h0 h1 (proj2 Hs) i ((proj2 (Nat.succ_lt_mono _ _) Hi)) x Hx).
   rewrite /SF_fun /= ; case: Rlt_dec => [ Hx0 | _ ] //.
   contradict Hx0 ; apply Rle_not_lt, Rle_trans with (1 := proj1 Hs),
   Rle_trans with (2 := proj1 Hx), (sorted_head [:: h0, h1 & s] _ (proj2 Hs)) ;
@@ -2564,7 +2564,7 @@ Proof.
   case: Rlt_dec => [ Hx0 | _ ] //.
   contradict Hx0 ; apply Rle_not_lt, Rle_trans with (2 := proj1 Hx),
   (sorted_head [:: h0, h1 & s] _ (proj2 Hs)) ; simpl; intuition.
-  rewrite size_mkseq ; by apply lt_n_S, Nat.lt_0_succ.
+  rewrite size_mkseq ; by apply ->Nat.succ_lt_mono; apply Nat.lt_0_succ.
 Qed.
 
 Lemma SF_inf_fun_rw (f : R -> R) (a b : R) (n : nat) (x : R) (Hx : a <= x <= b) :
@@ -2582,16 +2582,16 @@ Proof.
 (* i < n *)
   case: (unif_part a b n) (unif_part_sort a b n Hab) i Hi x Hx => {a b Hab n} [| h s] Hs /= i Hi.
     by apply Nat.nlt_0_r in Hi.
-  case: (s) Hs (i) (lt_S_n _ _ Hi) => {s i Hi} [| h0 s] Hs /= i Hi.
+  case: (s) Hs (i) ((proj2 (Nat.succ_lt_mono _ _) Hi)) => {s i Hi} [| h0 s] Hs /= i Hi.
     by apply Nat.nlt_0_r in Hi.
-  elim: (s) h h0 Hs (i) (lt_S_n _ _ Hi) => {s i Hi} [|h1 s IH] h h0 Hs /= i Hi x Hx.
+  elim: (s) h h0 Hs (i) ((proj2 (Nat.succ_lt_mono _ _) Hi)) => {s i Hi} [|h1 s IH] h h0 Hs /= i Hi x Hx.
     by apply Nat.nlt_0_r in Hi.
   case: i Hx Hi => [|i]/= Hx Hi.
   rewrite /SF_fun /=.
   case: Rlt_dec => [Hx0 | _ ].
   contradict Hx0 ; apply Rle_not_lt, Hx.
   case: Rlt_dec => // Hx0 ; contradict Hx0 ; apply Hx.
-  rewrite -(IH h0 h1 (proj2 Hs) i (lt_S_n _ _ Hi) x Hx).
+  rewrite -(IH h0 h1 (proj2 Hs) i ((proj2 (Nat.succ_lt_mono _ _) Hi)) x Hx).
   rewrite /SF_fun /= ; case: Rlt_dec => [ Hx0 | _ ] //.
   contradict Hx0 ; apply Rle_not_lt, Rle_trans with (1 := proj1 Hs),
   Rle_trans with (2 := proj1 Hx), (sorted_head [:: h0, h1 & s] _ (proj2 Hs)) ;
@@ -2620,7 +2620,7 @@ Proof.
   case: Rlt_dec => [ Hx0 | _ ] //.
   contradict Hx0 ; apply Rle_not_lt, Rle_trans with (2 := proj1 Hx),
   (sorted_head [:: h0, h1 & s] _ (proj2 Hs)) ; simpl; intuition.
-  rewrite size_mkseq ; by apply lt_n_S, Nat.lt_0_succ.
+  rewrite size_mkseq ; by apply ->Nat.succ_lt_mono; apply Nat.lt_0_succ.
 Qed.
 
 (** ** SF_sup_real is a StepFun *)
@@ -2699,7 +2699,7 @@ Proof.
   by apply Nat.lt_succ_diag_r.
   eapply (IH (proj2 Hl) (Sup_fct f x0 x1) (Sup_fct f x0 x1)).
   2: apply Hx.
-  simpl ; by apply lt_S_n.
+  simpl ; by apply Nat.succ_lt_mono.
 Qed.
 
 Definition SF_sup_r (f : R -> R) (a b : R) (n : nat) : StepFun a b.
@@ -2814,7 +2814,7 @@ Proof.
   by apply Nat.lt_succ_diag_r.
   eapply (IH (proj2 Hl) (Inf_fct f x0 x1) (Inf_fct f x0 x1)).
   2: apply Hx.
-  simpl ; by apply lt_S_n.
+  simpl ; by apply Nat.succ_lt_mono.
 Qed.
 
 Definition SF_inf_r (f : R -> R) (a b : R) (n : nat) : StepFun a b.

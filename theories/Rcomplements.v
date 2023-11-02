@@ -48,7 +48,7 @@ Lemma sub_succ (n m : nat) : S n - S m = n - m.
 Proof.  done.  Qed.
 
 Lemma sub_succ_l (n m : nat) : n <= m -> S m - n = S (m - n).
-Proof.  move=> h.  by rewrite minus_Sn_m.  Qed.
+Proof.  move=> h.  by rewrite <-Nat.sub_succ_l.  Qed.
 
 Lemma lt_neq (n m : nat) : n < m -> n <> m.
 Proof.
@@ -57,42 +57,72 @@ exact (Nat.lt_irrefl m H).
 Qed.
 
 Lemma minus_0_le (n m : nat) : n <= m -> n - m = 0.
-Proof.
-case: (eq_nat_dec n m) => [-> _ | h h'].
-  by rewrite Nat.sub_diag.
-apply: not_le_minus_0.
-move=> h''.
-apply: h.
-exact: Nat.le_antisymm.
-Qed.
+Proof. intros H%Nat.sub_0_le. exact H. Qed.
 
 Lemma sub_succ_r (n m : nat) : n - S m = pred (n - m).
-Proof.
-case: n => [// | n ].
-case: (le_le_S_dec m n) => h; rewrite sub_succ.
-  rewrite -minus_Sn_m //=.
-move: (le_S (S n) m h) => /le_S_n h'.
-by rewrite (minus_0_le n m h') (minus_0_le (S n) m h).
-Qed.
-
+Proof. now apply Nat.sub_succ_r. Qed.
+  
 Lemma sub_add (n m : nat) : n <= m -> m - n + n = m.
-Proof.
-elim: m => [/le_n_0_eq // | m ih h].
-by rewrite Nat.add_comm le_plus_minus_r.
-Qed.
+Proof. now apply Nat.sub_add. Qed.
 
 Lemma le_pred_le_succ (n m : nat) : pred n <= m <-> n <= S m.
+Proof. now apply Nat.le_pred_le_succ. Qed.
+
+Lemma add_sub_add_l : forall n m p : nat, (n - m) = (p + n - (p + m)).
 Proof.
-case: n m => /= [ | n m].
-  split=> _; exact: Nat.le_0_l.
-split.
-  exact: le_n_S.
-exact: le_S_n.
+  intros n m p; induction p as [| p IH].
+  - by rewrite 2!Nat.add_0_l.
+  - by rewrite 2!Nat.add_succ_l Nat.sub_succ IH.
+Qed.
+
+(* NOTE: needed because MyNat.le_add_l was only introduced in Coq 8.17 (see
+ * Coq.Numbers.Natural.Abstract.NAddOrder). This can go away and be replaced
+ * by Nat.le_add_r once the minimal Coq supported version is >= 8.17. *)
+Lemma le_add_l : forall n m : nat, n <= m + n.
+Proof.
+  intros n m; rewrite -{1}(Nat.add_0_l n); apply Nat.add_le_mono.
+  - exact (Nat.le_0_l m).
+  - exact (Nat.le_refl n).
+Qed.
+
+(* NOTE: When the minimal supported Coq version is >= 8.16,
+   remove it and rename MyNat.Even_double into Nat.Even_double *)
+Lemma Even_double : forall n : nat, Nat.Even n -> n = Nat.double (Nat.div2 n).
+Proof. now intros n [k ->]; rewrite Nat.double_twice Nat.div2_double. Qed.
+
+(* NOTE: When the minimal supported Coq version is >= 8.16,
+   remove it and rename MyNat.Odd_double into Nat.Odd_double *)
+Lemma Odd_double : forall n : nat, Nat.Odd n -> n = S (Nat.double (Nat.div2 n)).
+Proof.
+  intros n [k ->].
+  now rewrite Nat.add_1_r Nat.div2_succ_double Nat.double_twice.
+Qed.
+
+(* NOTE: When the minimal supported Coq version is >= 8.16,
+   remove it and rename MyNat.Odd_double into Nat.Odd_double *)
+Lemma Even_div2 : forall n : nat, Nat.Even n -> Nat.div2 n = Nat.div2 (S n).
+Proof. now intros n [k ->]; rewrite Nat.div2_double Nat.div2_succ_double. Qed.
+
+(* NOTE: When the minimal supported Coq version is >= 8.16,
+   remove it and rename MyNat.Odd_div2 into Nat.Odd_div2 *)
+Lemma Odd_div2 : forall n : nat, Nat.Odd n -> S (Nat.div2 n) = Nat.div2 (S n).
+Proof.
+  intros n [k ->]; rewrite Nat.add_1_r Nat.div2_succ_double.
+  rewrite -(Nat.add_1_r (S (2 * k))) (Nat.add_succ_comm (2 * k)).
+  rewrite -{2}(Nat.mul_1_r 2) -(Nat.mul_add_distr_l 2) Nat.add_succ_r.
+  now rewrite Nat.add_0_r Nat.div2_double.
+Qed.
+
+(* NOTE: When the minimal supported Coq version is >= 8.16,
+   remove it and rename MyNat.double_S into Nat.double_S *)
+Lemma double_S : forall n : nat, Nat.double (S n) = S (S (Nat.double n)).
+Proof.
+  now intros n; unfold Nat.double; rewrite Nat.add_succ_r Nat.add_succ_l.
 Qed.
 
 End MyNat.
 
-From Coq Require Import Even Div2 ssrbool.
+From Coq Require Import ssrbool.
 From mathcomp Require Import seq.
 
 Open Scope R_scope.
@@ -581,7 +611,7 @@ Proof.
   reflexivity.
   rewrite <- plus_n_Sm, Nat.add_0_r, IHm ; reflexivity.
   rewrite (decomp_sum _ _ (Nat.lt_0_succ _)) ; simpl ; ring_simplify.
-  apply lt_S_n in Hnm.
+  apply <-Nat.succ_lt_mono in Hnm.
   rewrite <- (IHm _ _ Hnm).
   clear IHm.
   induction (m - S n)%nat ; simpl.
@@ -602,7 +632,7 @@ Lemma sum_f_n_Sm (u : nat -> R) (n m : nat) :
   (n <= m)%nat -> sum_f n (S m) u = sum_f n m u + u (S m).
 Proof.
   move => H.
-  rewrite /sum_f -minus_Sn_m // /sum_f_R0 -/sum_f_R0.
+  rewrite /sum_f Nat.sub_succ_l // /sum_f_R0 -/sum_f_R0.
   rewrite plus_Sn_m.
   by rewrite MyNat.sub_add.
 Qed.
@@ -619,7 +649,7 @@ Lemma sum_f_u_add (u : nat -> R) (p n m : nat) :
   (n <= m)%nat -> sum_f (n + p)%nat (m + p)%nat u = sum_f n m (fun k => u (k + p)%nat).
 Proof.
   move => H ; rewrite /sum_f.
-  rewrite ?(Nat.add_comm _ p) -minus_plus_simpl_l_reverse.
+  rewrite ?(Nat.add_comm _ p) -MyNat.add_sub_add_l.
   elim: (m - n)%nat => [ | k IH] //=.
   by rewrite Nat.add_comm.
   rewrite IH ; repeat apply f_equal.
@@ -637,7 +667,7 @@ Proof.
   rewrite sum_f_n_Sm ; try by intuition.
   replace (sum_f n m u + u (S m) - u n)
     with ((sum_f n m u - u n) + u (S m)) by ring.
-  apply lt_n_Sm_le, le_lt_eq_dec in H.
+  apply (proj1 (Nat.lt_succ_r _ _)), le_lt_eq_dec in H.
   case: H => [ H | -> {n} ] //.
   rewrite -IH => //.
   rewrite /sum_f ; simpl.
@@ -677,7 +707,8 @@ Proof.
 
   move => {} n m H.
   elim: m u H => [ | m IH] u H //.
-  apply lt_n_Sm_le, le_lt_eq_dec in H ; case: H IH => [H IH | -> _ {n}] //.
+  apply (proj1 (Nat.lt_succ_r _ _)),
+    le_lt_eq_dec in H ; case: H IH => [H IH | -> _ {n}] //.
   rewrite sum_f_n_Sm ; try by intuition.
   replace (sum_f n (S m) u) with (sum_f n (S m) u - u n + u n) by ring.
   rewrite -sum_f_Sn_m ; try by intuition.
@@ -693,7 +724,7 @@ Proof.
   by rewrite Nat.sub_diag Nat.add_0_l.
 
   rewrite /sum_f.
-  rewrite -minus_Sn_m ; try by intuition.
+  rewrite Nat.sub_succ_l ; try by intuition.
   rewrite Nat.sub_diag.
   rewrite /sum_f_R0 -/sum_f_R0.
   replace (1+m)%nat with (S m) by ring.
@@ -1341,23 +1372,23 @@ Proof.
   case => /= [ | j] Hj //.
   by apply Nat.lt_irrefl in Hj.
   by apply Nat.nlt_0_r in Hj.
-  by apply IH, lt_S_n.
+  by apply IH, Nat.succ_lt_mono.
   elim: (S n) (S i) Hi => /= [ | m IH] ;
   case => /= [ | j] Hj //.
   by apply Nat.nlt_0_r in Hj.
-  by apply IH, lt_S_n.
+  by apply IH, Nat.succ_lt_mono.
   rewrite ?nth_mkseq //.
   rewrite S_INR Rminus_le_0 ; ring_simplify.
   by apply Rle_refl.
   elim: (S n) (S i) Hi => /= [ | m IH] ;
   case => /= [ | j] Hj //.
   by apply Nat.nlt_0_r in Hj.
-  by apply IH, lt_S_n.
+  by apply IH, Nat.succ_lt_mono.
   elim: (S n) (S i) Hi => /= [ | m IH] ;
   case => /= [ | j] Hj //.
   by apply Nat.nlt_0_r in Hj.
   by apply Nat.nlt_0_r in Hj.
-  by apply IH, lt_S_n.
+  by apply IH, Nat.succ_lt_mono.
 
   set l : seq R := rcons (mkseq (fun k => a + INR k * eps) (S n)) b.
   exists l.
@@ -1367,7 +1398,7 @@ Proof.
   simpl ; by rewrite last_rcons.
   move => i Hi ;
   rewrite size_rcons size_mkseq in Hi ;
-  apply lt_n_Sm_le, le_S_n in Hi.
+  apply (proj1 (Nat.lt_succ_r _ _)), le_S_n in Hi.
   split.
   rewrite ?nth_rcons size_mkseq.
   have H : ssrnat.leq (S i) (S n) = true.
@@ -1463,7 +1494,7 @@ Proof.
   apply IH ; try by intuition.
   move => i Hi.
   apply (Hl (S i)).
-  by apply lt_n_S.
+  by apply (proj1 (Nat.succ_lt_mono _ _)).
 Qed.
 
 (** Notations *)
@@ -1672,10 +1703,11 @@ Proof.
     case: (Rlt_le_dec x h) => H.
     exists O => /= ; intuition.
     have H0 : RList.ordered_Rlist (h :: h''  :: l).
-    move => i Hi ; apply (Hsort (S i)) => /= ; apply lt_n_S, Hi.
+    move => i Hi ; apply (Hsort (S i)) => /= ; 
+      apply (proj1 (Nat.succ_lt_mono _ _)), Hi.
     case: (IH _ _ H Hx' H0) => {IH} i Hi.
     exists (S i) ; split.
-    simpl ; apply lt_n_S, Hi => /=.
+    simpl ; apply (proj1 (Nat.succ_lt_mono _ _)), Hi => /=.
     apply Hi.
   case: H => i [Hi [Ht Ht']].
   apply Rle_lt_or_eq_dec in Ht ; case: Ht => Ht.

@@ -19,7 +19,7 @@ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 COPYING file for more details.
 *)
 
-From Coq Require Import Reals Even Div2 Psatz ssreflect.
+From Coq Require Import Reals Psatz ssreflect.
 
 Require Import Rcomplements Rbar Lim_seq Lub Hierarchy Continuity Derive Seq_fct Series.
 
@@ -334,10 +334,10 @@ Proof.
   apply Rle_trans with (2 := Rmax_l _ _).
   elim: N n Hn {Hx} => [ | N IH] /= n Hn.
   by apply Nat.nlt_0_r in Hn.
-  apply lt_n_Sm_le, le_lt_eq_dec in Hn ; case: Hn => Hn.
-  apply Rle_trans with (2 := Rmax_l _ _).
-  by apply IH.
-  rewrite Hn ; by apply Rle_trans with (2 := Rmax_r _ _), Rle_refl.
+  apply ->Nat.lt_succ_r in Hn.
+  destruct (proj1 (Nat.le_lteq _ _) Hn) as [Hn' | ->].
+  - now apply Rle_trans with (2 := Rmax_l _ _), IH.
+  - now apply Rle_trans with (2 := Rmax_r _ _), Rle_refl.
 Qed.
 
 (** Convergence theorems *)
@@ -396,10 +396,10 @@ Proof.
   apply Rle_trans with (2 := Rmax_l _ _).
   elim: N n Hn {Hx} => [ | N IH] /= n Hn.
   by apply Nat.nlt_0_r in Hn.
-  apply lt_n_Sm_le, le_lt_eq_dec in Hn ; case: Hn => Hn.
-  apply Rle_trans with (2 := Rmax_l _ _).
-  by apply IH.
-  rewrite Hn ; by apply Rle_trans with (2 := Rmax_r _ _), Rle_refl.
+  apply ->Nat.lt_succ_r in Hn.
+  destruct (proj1 (Nat.le_lteq _ _) Hn) as [Hn' | ->].
+  - now apply Rle_trans with (2 := Rmax_l _ _), IH.
+  - now apply Rle_trans with (2 := Rmax_r _ _), Rle_refl.
 Qed.
 
 Lemma CV_radius_ext (a b : nat -> R) :
@@ -1000,7 +1000,7 @@ Proof.
  exists 1%nat.
  intros n Hn.
  rewrite -pred_Sn.
- now apply lt_pred_n_n.
+ now apply Nat.lt_pred_l, Nat.neq_0_lt_0.
  now apply filterlim_comp with (2 := filterlim_scal_r _ _).
 Qed.
 
@@ -1038,7 +1038,7 @@ Proof.
   rewrite /PS_incr_n -/PS_incr_n /PS_incr_1.
   case: k H => [ | k] H.
   by [].
-  by apply IH, lt_S_n.
+  by apply IH, Nat.succ_lt_mono.
 Qed.
 
 Lemma is_pseries_incr_n (a : nat -> V) (n : nat) (x : K) (l : V) :
@@ -1238,7 +1238,7 @@ Proof.
   field.
   split; try assumption.
   now apply pow_nonzero.
-  now apply plus_minus.
+  now rewrite Nat.sub_succ Nat.sub_0_r.
   intros m; rewrite pow_n_pow.
   apply Rmult_comm.
 Qed.
@@ -1366,36 +1366,37 @@ Proof.
   rewrite 3!is_pseries_R.
   move => H1 H2.
   apply filterlim_ext with (fun n =>
-    (sum_n (fun k : nat => a (2 * k)%nat * (x ^ 2) ^ k) (div2 n)) +
+    (sum_n (fun k : nat => a (2 * k)%nat * (x ^ 2) ^ k) (Nat.div2 n)) +
     x * match n with | O => 0
-    | S n => (sum_n (fun k : nat => a (2 * k + 1)%nat * (x ^ 2) ^ k) (div2 n)) end).
+    | S n => (sum_n (fun k : nat => a (2 * k + 1)%nat * (x ^ 2) ^ k) (Nat.div2 n)) end).
   case => [ | n].
   rewrite /= !sum_O /= ; ring.
-  case: (even_odd_dec n) => Hn.
+  case: (Nat.Even_or_Odd n) => Hn.
 (* even n *)
   rewrite 3!sum_n_Reals.
-  rewrite -(even_div2 _ Hn) {3}(even_double _ Hn).
-  elim: (div2 n) => {n Hn} [ | n] ;
+  rewrite -(MyNat.Even_div2 _ Hn) {3}(MyNat.Even_double _ Hn) Nat.double_twice.
+  elim: (Nat.div2 n) => {n Hn} [ | n] ;
   rewrite ?double_S /sum_f_R0 -/sum_f_R0.
   rewrite /double /= ; ring.
   rewrite -pow_mult.
-  replace (2 * S n)%nat with (S (S (double n)))
-    by (rewrite -double_S /double ; ring).
-  replace (S (S (double n)) + 1)%nat with (S (S (S (double n)))) by ring.
-  move => <- ; simpl ; ring.
+  replace (2 * S n)%nat with (S (S (Nat.double n)))
+    by (now rewrite -MyNat.double_S Nat.double_twice).
+  replace (S (S (Nat.double n)) + 1)%nat with (S (S (S (Nat.double n))))
+    by (now rewrite Nat.add_1_r).
+    rewrite !Nat.double_twice; simpl; move => <-; ring.
 (* odd n *)
   rewrite 3!sum_n_Reals.
-  rewrite -(odd_div2 _ Hn) {3}(odd_double _ Hn).
-  elim: (div2 n) => {n Hn} [ | n] ;
+  rewrite -(MyNat.Odd_div2 _ Hn) {3}(MyNat.Odd_double _ Hn) !Nat.double_twice.
+  elim: (Nat.div2 n) => {n Hn} [ | n] ;
   rewrite ?double_S /sum_f_R0 -/sum_f_R0.
   rewrite /double /= ; ring.
   rewrite -?pow_mult.
-  replace (2 * S n)%nat with (S (S (double n)))
-    by (rewrite -double_S /double ; ring).
-  replace (2 * S (S n))%nat with (S (S (S (S (double n)))))
-    by (rewrite -double_S /double ; ring).
-  replace (S (S (double n)) + 1)%nat with (S (S (S (double n)))) by ring.
-  move => <- ; simpl ; ring.
+  replace (2 * S n)%nat with (S (S (Nat.double n)))
+    by (rewrite -MyNat.double_S Nat.double_twice ; ring).
+  replace (2 * S (S n))%nat with (S (S (S (S (Nat.double n)))))
+    by (rewrite -MyNat.double_S Nat.double_twice ; ring).
+  replace (S (S (Nat.double n)) + 1)%nat with (S (S (S (Nat.double n)))) by ring.
+  rewrite !Nat.double_twice; simpl; move => <-; ring.
   apply (is_lim_seq_plus' _ _ l1 (x*l2)).
 (* a(2k)x^(2k) *)
   apply filterlim_comp with (2:=H1).
@@ -1403,20 +1404,20 @@ Proof.
   exists (2*N+1)%nat.
   intros n Hn; apply HN.
   apply le_double.
-  apply plus_le_reg_l with 1%nat.
+  apply Nat.add_le_mono_l with 1%nat.
   rewrite Nat.add_comm.
   apply Nat.le_trans with (1:=Hn).
-  apply Nat.le_trans with (1+double (div2 n))%nat.
-  case (even_or_odd n); intros J.
-  rewrite <- even_double; try exact J.
+  apply Nat.le_trans with (1+Nat.double (Nat.div2 n))%nat.
+  case (Nat.Even_or_Odd n); intros J.
+  rewrite <- MyNat.Even_double; try exact J.
   now apply le_S.
-  rewrite <- odd_double; easy.
+  rewrite <- MyNat.Odd_double; easy.
   simpl; now rewrite Nat.add_0_r.
 (* a(2k+1)x^(2k+1) *)
   apply (is_lim_seq_scal_l _ x l2) => //.
   apply filterlim_ext_loc with
     (fun n => sum_n (fun k : nat => a (2 * k + 1)%nat * (x ^ 2) ^ k)
-      (div2 (pred n))).
+      (Nat.div2 (pred n))).
   exists 1%nat; intros y; case y.
   easy.
   intros n _; reflexivity.
@@ -1425,16 +1426,16 @@ Proof.
   exists (2*N+2)%nat.
   intros n Hn; apply HN.
   apply le_double.
-  apply plus_le_reg_l with 2%nat.
+  apply Nat.add_le_mono_l with 2%nat.
   rewrite Nat.add_comm.
   apply Nat.le_trans with (1:=Hn).
-  apply Nat.le_trans with (1+(1+double (div2 (pred n))))%nat.
-  case (even_or_odd (pred n)); intros J.
-  rewrite <- even_double; try exact J.
+  apply Nat.le_trans with (1+(1+Nat.double (Nat.div2 (pred n))))%nat.
+  case (Nat.Even_or_Odd (pred n)); intros J.
+  rewrite <- MyNat.Even_double; try exact J.
   case n.
   simpl; now apply le_S, le_S.
   intros m; simpl; now apply le_S.
-  rewrite <- odd_double; try exact J.
+  rewrite <- MyNat.Odd_double; try exact J.
   case n; simpl; try easy.
   now apply le_S.
   simpl; now rewrite Nat.add_0_r.
