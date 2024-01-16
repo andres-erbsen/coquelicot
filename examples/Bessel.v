@@ -358,7 +358,7 @@ Proof.
   field_simplify in Haux.
   field_simplify.
   by rewrite (Rmult_comm (INR n ^ 2)).
-  move: Haux.
+  try revert Haux.
   by apply INR_fact_neq_0.
 
   move => k.
@@ -463,10 +463,10 @@ Proof.
     case: Ha0 => // Ha0.
     destruct n.
     destruct k => //.
-    by apply lt_S_n, Nat.nlt_0_r in Hk.
+    by apply Nat.succ_lt_mono, Nat.nlt_0_r in Hk.
     case: Ha1 => // Ha1.
     move: k Hk.
-    apply (Div2.ind_0_1_SS (fun k => (k < S (S n))%nat -> a k = 0)) => // k IH Hk.
+    apply (MyNat.ind_0_1_SS (fun k => (k < S (S n))%nat -> a k = 0)) => // k IH Hk.
     rewrite H.
     rewrite IH /Rdiv.
     ring.

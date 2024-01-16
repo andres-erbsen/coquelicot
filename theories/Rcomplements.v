@@ -75,6 +75,16 @@ Proof.
   - by rewrite 2!Nat.add_succ_l Nat.sub_succ IH.
 Qed.
 
+Lemma ind_0_1_SS :
+  forall P: nat -> Prop,
+  P 0 -> P 1 -> (forall n, P n -> P (S (S n))) -> forall n, P n.
+Proof.
+  intros P H0 H1 H2.
+  fix IH 1.
+  intros [|[|n]] ; try assumption.
+  apply H2, IH.
+Qed.
+
 (* NOTE: needed because MyNat.le_add_l was only introduced in Coq 8.17 (see
  * Coq.Numbers.Natural.Abstract.NAddOrder). This can go away and be replaced
  * by Nat.le_add_r once the minimal Coq supported version is >= 8.17. *)
