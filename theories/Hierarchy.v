@@ -48,13 +48,19 @@ Global Hint Mode Filter + + : typeclass_instances.
 
 Class ProperFilter' {T : Type} (F : (T -> Prop) -> Prop) := {
   filter_not_empty : not (F (fun _ => False)) ;
-  filter_filter' :> Filter F
+  filter_filter' : Filter F
 }.
+(* When requiring Coq >= 8.17, replace the line below with
+  filter_filter' :: Filter F  *)
+#[global] Existing Instance filter_filter'.
 
 Class ProperFilter {T : Type} (F : (T -> Prop) -> Prop) := {
   filter_ex : forall P, F P -> exists x, P x ;
-  filter_filter :> Filter F
+  filter_filter : Filter F
 }.
+(* When requiring Coq >= 8.17, replace the line below with
+  filter_filter :: Filter F  *)
+#[global] Existing Instance filter_filter.
 
 Global Instance Proper_StrongProper :
   forall {T : Type} (F : (T -> Prop) -> Prop),
