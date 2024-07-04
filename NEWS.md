@@ -1,3 +1,8 @@
+Version 3.4.2
+-------------
+
+* ensured compatibility from Coq 8.12 to 8.20
+
 Version 3.4.1
 -------------
 
