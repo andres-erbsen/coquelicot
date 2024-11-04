@@ -35,7 +35,7 @@ Ltac evar_last :=
     unfold tmp ; clear tmp
   end.
 
-From Coq Require Import Reals Psatz ssreflect.
+From Coq Require Import ZArith Reals Psatz ssreflect.
 
 Local Tactic Notation "intuition" := (intuition auto with arith zarith real).
 
