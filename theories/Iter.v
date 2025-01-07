@@ -19,7 +19,7 @@ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 COPYING file for more details.
 *)
 
-From Coq Require Import Reals Lia List ssreflect ssrbool.
+From Coq Require Import Compare_dec Reals Lia List ssreflect ssrbool.
 From mathcomp Require Import seq eqtype.
 
 Require Import Rcomplements.
